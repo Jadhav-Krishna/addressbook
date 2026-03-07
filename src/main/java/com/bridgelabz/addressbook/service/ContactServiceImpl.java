@@ -23,7 +23,7 @@ public class ContactServiceImpl implements ContactService {
     @Override
     public Optional<Contact> getContactById(long id) {
         return contacts.stream()
-                .filter(contact -> contact.getId() == id)
+                .filter(contact -> contact.getId() != null && contact.getId() == id)
                 .findFirst();
     }
 
@@ -49,7 +49,7 @@ public class ContactServiceImpl implements ContactService {
     public Optional<Contact> updateContact(long id, ContactRequest request) {
         for (int index = 0; index < contacts.size(); index++) {
             Contact existing = contacts.get(index);
-            if (existing.getId() == id) {
+            if (existing.getId() != null && existing.getId() == id) {
                 Contact updated = new Contact(
                         id,
                         request.getFirstName(),
@@ -73,7 +73,7 @@ public class ContactServiceImpl implements ContactService {
         Iterator<Contact> iterator = contacts.iterator();
         while (iterator.hasNext()) {
             Contact contact = iterator.next();
-            if (contact.getId() == id) {
+            if (contact.getId() != null && contact.getId() == id) {
                 iterator.remove();
                 return true;
             }
