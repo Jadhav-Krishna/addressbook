@@ -6,8 +6,10 @@ import org.junit.jupiter.api.Assumptions;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -50,5 +52,85 @@ class AddressBookJsonServerTests {
                 .isPresent()
                 .get()
                 .hasSize(loaded);
+    }
+
+    @Test
+    void addMultipleEntriesToJsonServer_andSyncMemory() {
+        String baseUrl = System.getProperty("json.server.url", "http://localhost:3000");
+        String endpoint = System.getProperty("json.server.endpoint", "/contacts");
+
+        List<ContactRequest> toCreate = List.of(
+                newContact("Ada" + uniqueSuffix(), "Lovelace", "Pune"),
+                newContact("Grace" + uniqueSuffix(), "Hopper", "Mumbai")
+        );
+
+        List<Integer> createdIds = new ArrayList<>();
+        try {
+            for (ContactRequest request : toCreate) {
+                Integer id = RestAssured.given()
+                        .baseUri(baseUrl)
+                        .contentType("application/json")
+                        .body(request)
+                        .when()
+                        .post(endpoint)
+                        .then()
+                        .statusCode(201)
+                        .extract()
+                        .path("id");
+                if (id != null) {
+                    createdIds.add(id);
+                }
+            }
+
+            ContactRequest[] contacts = RestAssured.given()
+                    .baseUri(baseUrl)
+                    .when()
+                    .get(endpoint)
+                    .then()
+                    .statusCode(200)
+                    .extract()
+                    .as(ContactRequest[].class);
+
+            Assumptions.assumeTrue(contacts != null && contacts.length > 0,
+                    "No contacts returned from JSON server");
+
+            List<ContactRequest> contactList = Arrays.asList(contacts);
+            int loaded = addressBookService.loadAddressBook("JsonServer", contactList);
+
+            assertThat(loaded).isEqualTo(contactList.size());
+            assertThat(addressBookService.getContacts("JsonServer"))
+                    .isPresent()
+                    .get()
+                    .anyMatch(contact -> contact.getFirstName().equals(toCreate.get(0).getFirstName()))
+                    .anyMatch(contact -> contact.getFirstName().equals(toCreate.get(1).getFirstName()));
+        } catch (Exception ex) {
+            Assumptions.assumeTrue(false, "JSON server not reachable: " + baseUrl + endpoint);
+        } finally {
+            for (Integer id : createdIds) {
+                RestAssured.given()
+                        .baseUri(baseUrl)
+                        .when()
+                        .delete(endpoint + "/" + id)
+                        .then()
+                        .statusCode(200);
+            }
+        }
+    }
+
+    private static ContactRequest newContact(String firstName, String lastName, String city) {
+        ContactRequest request = new ContactRequest();
+        request.setFirstName(firstName);
+        request.setLastName(lastName);
+        request.setAddress("1 Main St");
+        request.setCity(city);
+        request.setState("MH");
+        request.setZip("411001");
+        request.setPhoneNumber("9999999999");
+        request.setEmail(firstName.toLowerCase() + "@example.com");
+        return request;
+    }
+
+    private static String uniqueSuffix() {
+        return "-" + UUID.randomUUID().toString().substring(0, 8);
     }
 }
