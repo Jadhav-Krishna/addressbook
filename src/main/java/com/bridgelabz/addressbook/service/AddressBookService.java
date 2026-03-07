@@ -23,4 +23,8 @@ public interface AddressBookService {
     List<Contact> searchByCity(String city);
 
     List<Contact> searchByState(String state);
+
+    java.util.Map<String, Long> countByCity();
+
+    java.util.Map<String, Long> countByState();
 }

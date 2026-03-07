@@ -19,6 +19,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.time.Instant;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/address-books")
@@ -95,5 +96,15 @@ public class AddressBookController {
     @GetMapping("/search/state/{state}")
     public List<Contact> searchByState(@PathVariable String state) {
         return addressBookService.searchByState(state);
+    }
+
+    @GetMapping("/search/count/city")
+    public Map<String, Long> countByCity() {
+        return addressBookService.countByCity();
+    }
+
+    @GetMapping("/search/count/state")
+    public Map<String, Long> countByState() {
+        return addressBookService.countByState();
     }
 }

@@ -14,6 +14,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.stream.Collectors;
 
 @Service
 public class AddressBookServiceImpl implements AddressBookService {
@@ -155,6 +156,22 @@ public class AddressBookServiceImpl implements AddressBookService {
             return List.of();
         }
         return new ArrayList<>(matches);
+    }
+
+    @Override
+    public Map<String, Long> countByCity() {
+        return addressBooks.values().stream()
+                .flatMap(store -> store.contacts.stream())
+                .filter(contact -> contact.getCity() != null && !contact.getCity().isBlank())
+                .collect(Collectors.groupingBy(Contact::getCity, Collectors.counting()));
+    }
+
+    @Override
+    public Map<String, Long> countByState() {
+        return addressBooks.values().stream()
+                .flatMap(store -> store.contacts.stream())
+                .filter(contact -> contact.getState() != null && !contact.getState().isBlank())
+                .collect(Collectors.groupingBy(Contact::getState, Collectors.counting()));
     }
 
     private void addToIndex(Map<String, List<Contact>> index, String key, Contact contact) {
