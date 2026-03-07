@@ -45,4 +45,6 @@ public interface AddressBookService {
     int importAddressBookJson(String name, String filePath);
 
     boolean syncContactByName(Contact contact);
+
+    int loadAddressBook(String name, List<ContactRequest> requests);
 }

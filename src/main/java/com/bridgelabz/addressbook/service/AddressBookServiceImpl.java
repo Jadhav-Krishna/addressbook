@@ -377,6 +377,44 @@ public class AddressBookServiceImpl implements AddressBookService {
         return false;
     }
 
+    @Override
+    public int loadAddressBook(String name, List<ContactRequest> requests) {
+        if (name == null || name.isBlank() || requests == null) {
+            return 0;
+        }
+        AddressBookStore store = addressBooks.computeIfAbsent(name, value -> new AddressBookStore());
+        for (Contact existing : store.contacts) {
+            removeFromIndex(cityIndex, existing.getCity(), existing);
+            removeFromIndex(stateIndex, existing.getState(), existing);
+        }
+        store.contacts.clear();
+        store.idGenerator.set(0);
+
+        int added = 0;
+        for (ContactRequest request : requests) {
+            if (request == null) {
+                continue;
+            }
+            long id = store.idGenerator.incrementAndGet();
+            Contact contact = new Contact(
+                    id,
+                    request.getFirstName(),
+                    request.getLastName(),
+                    request.getAddress(),
+                    request.getCity(),
+                    request.getState(),
+                    request.getZip(),
+                    request.getPhoneNumber(),
+                    request.getEmail()
+            );
+            store.contacts.add(contact);
+            addToIndex(cityIndex, contact.getCity(), contact);
+            addToIndex(stateIndex, contact.getState(), contact);
+            added++;
+        }
+        return added;
+    }
+
     private String[] toCsvRow(Contact contact) {
         return new String[] {
                 nullToEmpty(contact.getFirstName()),
