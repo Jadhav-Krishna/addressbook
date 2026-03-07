@@ -47,11 +47,10 @@ class AddressBookJsonServerTests {
         List<ContactRequest> contactList = Arrays.asList(contacts);
         int loaded = addressBookService.loadAddressBook("JsonServer", contactList);
 
+        List<com.bridgelabz.addressbook.model.Contact> loadedContacts =
+                addressBookService.getContacts("JsonServer").orElseThrow();
         assertThat(loaded).isEqualTo(contactList.size());
-        assertThat(addressBookService.getContacts("JsonServer"))
-                .isPresent()
-                .get()
-                .hasSize(loaded);
+        assertThat(loadedContacts.size()).isEqualTo(loaded);
     }
 
     @Test
@@ -97,12 +96,13 @@ class AddressBookJsonServerTests {
             List<ContactRequest> contactList = Arrays.asList(contacts);
             int loaded = addressBookService.loadAddressBook("JsonServer", contactList);
 
+            List<com.bridgelabz.addressbook.model.Contact> loadedContacts =
+                    addressBookService.getContacts("JsonServer").orElseThrow();
             assertThat(loaded).isEqualTo(contactList.size());
-            assertThat(addressBookService.getContacts("JsonServer"))
-                    .isPresent()
-                    .get()
-                    .anyMatch(contact -> contact.getFirstName().equals(toCreate.get(0).getFirstName()))
-                    .anyMatch(contact -> contact.getFirstName().equals(toCreate.get(1).getFirstName()));
+            assertThat(loadedContacts.stream().anyMatch(contact ->
+                    contact.getFirstName().equals(toCreate.get(0).getFirstName()))).isTrue();
+            assertThat(loadedContacts.stream().anyMatch(contact ->
+                    contact.getFirstName().equals(toCreate.get(1).getFirstName()))).isTrue();
         } catch (Exception ex) {
             Assumptions.assumeTrue(false, "JSON server not reachable: " + baseUrl + endpoint);
         } finally {
@@ -166,13 +166,13 @@ class AddressBookJsonServerTests {
             List<ContactRequest> contactList = Arrays.asList(contacts);
             int loaded = addressBookService.loadAddressBook("JsonServer", contactList);
 
+            List<com.bridgelabz.addressbook.model.Contact> loadedContacts =
+                    addressBookService.getContacts("JsonServer").orElseThrow();
             assertThat(loaded).isEqualTo(contactList.size());
-            assertThat(addressBookService.getContacts("JsonServer"))
-                    .isPresent()
-                    .get()
-                    .anyMatch(contact -> contact.getFirstName().equals(updated.getFirstName())
+            assertThat(loadedContacts.stream().anyMatch(contact ->
+                    contact.getFirstName().equals(updated.getFirstName())
                             && contact.getCity().equals("Mumbai")
-                            && contact.getEmail().equals(updated.getEmail()));
+                            && contact.getEmail().equals(updated.getEmail()))).isTrue();
         } catch (Exception ex) {
             Assumptions.assumeTrue(false, "JSON server not reachable: " + baseUrl + endpoint);
         } finally {
@@ -228,10 +228,10 @@ class AddressBookJsonServerTests {
             List<ContactRequest> contactList = contacts == null ? List.of() : Arrays.asList(contacts);
             int loaded = addressBookService.loadAddressBook("JsonServer", contactList);
 
-            assertThat(addressBookService.getContacts("JsonServer"))
-                    .isPresent()
-                    .get()
-                    .noneMatch(contact -> contact.getFirstName().equals(original.getFirstName()));
+            List<com.bridgelabz.addressbook.model.Contact> loadedContacts =
+                    addressBookService.getContacts("JsonServer").orElseThrow();
+            assertThat(loadedContacts.stream().noneMatch(contact ->
+                    contact.getFirstName().equals(original.getFirstName()))).isTrue();
             assertThat(loaded).isEqualTo(contactList.size());
         } catch (Exception ex) {
             Assumptions.assumeTrue(false, "JSON server not reachable: " + baseUrl + endpoint);

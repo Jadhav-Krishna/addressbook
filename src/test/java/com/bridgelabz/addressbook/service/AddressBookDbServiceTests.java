@@ -5,8 +5,9 @@ import com.bridgelabz.addressbook.model.AddressBookEntry;
 import com.bridgelabz.addressbook.model.Contact;
 import com.bridgelabz.addressbook.repository.AddressBookJdbcRepository;
 import org.junit.jupiter.api.Test;
-import org.springframework.boot.test.autoconfigure.jdbc.JdbcTest;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
+import org.springframework.test.context.TestPropertySource;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -16,7 +17,16 @@ import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-@JdbcTest
+@SpringBootTest
+@TestPropertySource(properties = {
+        "spring.datasource.url=jdbc:h2:mem:addressbook;DB_CLOSE_DELAY=-1;MODE=MySQL",
+        "spring.datasource.driverClassName=org.h2.Driver",
+        "spring.datasource.username=sa",
+        "spring.datasource.password=",
+        "spring.jpa.hibernate.ddl-auto=none",
+        "spring.jpa.properties.hibernate.dialect=org.hibernate.dialect.H2Dialect",
+        "spring.sql.init.mode=always"
+})
 @Import({AddressBookDbServiceImpl.class, AddressBookJdbcRepository.class, AddressBookServiceImpl.class})
 class AddressBookDbServiceTests {
 
@@ -67,7 +77,7 @@ class AddressBookDbServiceTests {
         List<Contact> contacts = dbService.getContactsAddedBetween(start, end);
 
         assertThat(contacts).isNotEmpty();
-        assertThat(contacts).allMatch(contact -> "Ada".equals(contact.getFirstName()));
+        assertThat(contacts.stream().allMatch(contact -> "Ada".equals(contact.getFirstName()))).isTrue();
     }
 
     @Test
@@ -134,6 +144,6 @@ class AddressBookDbServiceTests {
         List<Contact> created = dbService.addContactsToDb("Personal", requests);
 
         assertThat(created).hasSize(2);
-        assertThat(created).allMatch(contact -> contact.getId() != null);
+        assertThat(created.stream().allMatch(contact -> contact.getId() != null)).isTrue();
     }
 }
