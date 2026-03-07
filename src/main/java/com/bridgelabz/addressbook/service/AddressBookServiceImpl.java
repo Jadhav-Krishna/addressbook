@@ -67,6 +67,42 @@ public class AddressBookServiceImpl implements AddressBookService {
     }
 
     @Override
+    public Optional<List<Contact>> getContactsSortedByCity(String name) {
+        AddressBookStore store = addressBooks.get(name);
+        if (store == null) {
+            return Optional.empty();
+        }
+        List<Contact> sorted = store.contacts.stream()
+                .sorted(Comparator.comparing(Contact::getCity, Comparator.nullsLast(String.CASE_INSENSITIVE_ORDER)))
+                .toList();
+        return Optional.of(new ArrayList<>(sorted));
+    }
+
+    @Override
+    public Optional<List<Contact>> getContactsSortedByState(String name) {
+        AddressBookStore store = addressBooks.get(name);
+        if (store == null) {
+            return Optional.empty();
+        }
+        List<Contact> sorted = store.contacts.stream()
+                .sorted(Comparator.comparing(Contact::getState, Comparator.nullsLast(String.CASE_INSENSITIVE_ORDER)))
+                .toList();
+        return Optional.of(new ArrayList<>(sorted));
+    }
+
+    @Override
+    public Optional<List<Contact>> getContactsSortedByZip(String name) {
+        AddressBookStore store = addressBooks.get(name);
+        if (store == null) {
+            return Optional.empty();
+        }
+        List<Contact> sorted = store.contacts.stream()
+                .sorted(Comparator.comparing(Contact::getZip, Comparator.nullsLast(String.CASE_INSENSITIVE_ORDER)))
+                .toList();
+        return Optional.of(new ArrayList<>(sorted));
+    }
+
+    @Override
     public AddContactResult addContact(String name, ContactRequest request) {
         AddressBookStore store = addressBooks.get(name);
         if (store == null) {

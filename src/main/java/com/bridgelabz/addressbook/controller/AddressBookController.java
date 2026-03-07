@@ -58,6 +58,27 @@ public class AddressBookController {
                 .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).build());
     }
 
+    @GetMapping("/{name}/contacts/sorted-by-city")
+    public ResponseEntity<List<Contact>> getContactsSortedByCity(@PathVariable String name) {
+        return addressBookService.getContactsSortedByCity(name)
+                .map(ResponseEntity::ok)
+                .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).build());
+    }
+
+    @GetMapping("/{name}/contacts/sorted-by-state")
+    public ResponseEntity<List<Contact>> getContactsSortedByState(@PathVariable String name) {
+        return addressBookService.getContactsSortedByState(name)
+                .map(ResponseEntity::ok)
+                .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).build());
+    }
+
+    @GetMapping("/{name}/contacts/sorted-by-zip")
+    public ResponseEntity<List<Contact>> getContactsSortedByZip(@PathVariable String name) {
+        return addressBookService.getContactsSortedByZip(name)
+                .map(ResponseEntity::ok)
+                .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).build());
+    }
+
     @PostMapping("/{name}/contacts")
     public ResponseEntity<?> addContact(
             @PathVariable String name,

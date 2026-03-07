@@ -16,6 +16,12 @@ public interface AddressBookService {
 
     Optional<List<Contact>> getContactsSortedByName(String name);
 
+    Optional<List<Contact>> getContactsSortedByCity(String name);
+
+    Optional<List<Contact>> getContactsSortedByState(String name);
+
+    Optional<List<Contact>> getContactsSortedByZip(String name);
+
     AddContactResult addContact(String name, ContactRequest request);
 
     Optional<Contact> updateContact(String name, long id, ContactRequest request);
