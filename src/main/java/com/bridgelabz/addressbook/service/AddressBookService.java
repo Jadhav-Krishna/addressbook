@@ -6,6 +6,7 @@ import com.bridgelabz.addressbook.model.Contact;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
 
 public interface AddressBookService {
     boolean createAddressBook(String name);
@@ -47,4 +48,12 @@ public interface AddressBookService {
     boolean syncContactByName(Contact contact);
 
     int loadAddressBook(String name, List<ContactRequest> requests);
+
+    CompletableFuture<Boolean> exportAddressBookAsync(String name, String filePath);
+
+    CompletableFuture<Integer> importAddressBookAsync(String name, String filePath);
+
+    CompletableFuture<Boolean> exportAddressBookJsonAsync(String name, String filePath);
+
+    CompletableFuture<Integer> importAddressBookJsonAsync(String name, String filePath);
 }

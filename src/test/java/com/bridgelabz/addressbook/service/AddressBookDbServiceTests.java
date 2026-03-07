@@ -1,5 +1,6 @@
 package com.bridgelabz.addressbook.service;
 
+import com.bridgelabz.addressbook.config.AsyncConfig;
 import com.bridgelabz.addressbook.dto.ContactRequest;
 import com.bridgelabz.addressbook.model.AddressBookEntry;
 import com.bridgelabz.addressbook.model.Contact;
@@ -17,7 +18,7 @@ import java.util.Map;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @JdbcTest
-@Import({AddressBookDbServiceImpl.class, AddressBookJdbcRepository.class, AddressBookServiceImpl.class})
+@Import({AddressBookDbServiceImpl.class, AddressBookJdbcRepository.class, AddressBookServiceImpl.class, AsyncConfig.class})
 class AddressBookDbServiceTests {
 
     private final AddressBookDbService dbService;

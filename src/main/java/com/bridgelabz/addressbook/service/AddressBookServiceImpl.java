@@ -10,6 +10,7 @@ import com.google.gson.Gson;
 import com.google.gson.JsonSyntaxException;
 import com.opencsv.CSVReader;
 import com.opencsv.CSVWriter;
+import org.springframework.beans.factory.annotation.Qualifier;
 
 import java.io.Reader;
 import java.io.Writer;
@@ -23,6 +24,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Executor;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
@@ -38,6 +41,11 @@ public class AddressBookServiceImpl implements AddressBookService {
     private final Map<String, AddressBookStore> addressBooks = new ConcurrentHashMap<>();
     private final Map<String, List<Contact>> cityIndex = new ConcurrentHashMap<>();
     private final Map<String, List<Contact>> stateIndex = new ConcurrentHashMap<>();
+    private final Executor ioExecutor;
+
+    public AddressBookServiceImpl(@Qualifier("ioExecutor") Executor ioExecutor) {
+        this.ioExecutor = ioExecutor;
+    }
 
     @Override
     public boolean createAddressBook(String name) {
@@ -413,6 +421,26 @@ public class AddressBookServiceImpl implements AddressBookService {
             added++;
         }
         return added;
+    }
+
+    @Override
+    public CompletableFuture<Boolean> exportAddressBookAsync(String name, String filePath) {
+        return CompletableFuture.supplyAsync(() -> exportAddressBook(name, filePath), ioExecutor);
+    }
+
+    @Override
+    public CompletableFuture<Integer> importAddressBookAsync(String name, String filePath) {
+        return CompletableFuture.supplyAsync(() -> importAddressBook(name, filePath), ioExecutor);
+    }
+
+    @Override
+    public CompletableFuture<Boolean> exportAddressBookJsonAsync(String name, String filePath) {
+        return CompletableFuture.supplyAsync(() -> exportAddressBookJson(name, filePath), ioExecutor);
+    }
+
+    @Override
+    public CompletableFuture<Integer> importAddressBookJsonAsync(String name, String filePath) {
+        return CompletableFuture.supplyAsync(() -> importAddressBookJson(name, filePath), ioExecutor);
     }
 
     private String[] toCsvRow(Contact contact) {

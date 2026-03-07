@@ -24,6 +24,7 @@ import java.time.LocalDateTime;
 import java.time.Instant;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
 
 @RestController
 @RequestMapping("/api/address-books")
@@ -144,113 +145,124 @@ public class AddressBookController {
     }
 
     @GetMapping("/db/entries")
-    public List<AddressBookEntry> getAllEntriesFromDb() {
-        return addressBookDbService.getAllEntries();
+    public CompletableFuture<List<AddressBookEntry>> getAllEntriesFromDb() {
+        return addressBookDbService.getAllEntriesAsync();
     }
 
     @GetMapping("/db/contacts")
-    public ResponseEntity<Contact> getContactFromDb(
+        public CompletableFuture<ResponseEntity<Contact>> getContactFromDb(
             @RequestParam String firstName,
             @RequestParam String lastName) {
-        return addressBookDbService.getContactByName(firstName, lastName)
-                .map(ResponseEntity::ok)
-                .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).build());
+        return addressBookDbService.getContactByNameAsync(firstName, lastName)
+            .thenApply(result -> result.map(ResponseEntity::ok)
+                .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).build()));
     }
 
     @PutMapping("/db/contacts")
-    public ResponseEntity<Contact> updateContactInDb(
+        public CompletableFuture<ResponseEntity<Contact>> updateContactInDb(
             @RequestParam String firstName,
             @RequestParam String lastName,
             @RequestBody ContactRequest request) {
-        return addressBookDbService.updateContactByName(firstName, lastName, request)
-                .map(ResponseEntity::ok)
-                .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).build());
+        return addressBookDbService.updateContactByNameAsync(firstName, lastName, request)
+            .thenApply(result -> result.map(ResponseEntity::ok)
+                .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).build()));
     }
 
     @GetMapping("/db/contacts/period")
-    public List<Contact> getContactsAddedInPeriod(
+    public CompletableFuture<List<Contact>> getContactsAddedInPeriod(
             @RequestParam String start,
             @RequestParam String end) {
         LocalDateTime startDateTime = LocalDateTime.parse(start);
         LocalDateTime endDateTime = LocalDateTime.parse(end);
-        return addressBookDbService.getContactsAddedBetween(startDateTime, endDateTime);
+        return addressBookDbService.getContactsAddedBetweenAsync(startDateTime, endDateTime);
     }
 
     @GetMapping("/db/contacts/count/city")
-    public Map<String, Long> countContactsByCityFromDb() {
-        return addressBookDbService.countContactsByCity();
+    public CompletableFuture<Map<String, Long>> countContactsByCityFromDb() {
+        return addressBookDbService.countContactsByCityAsync();
     }
 
     @GetMapping("/db/contacts/count/state")
-    public Map<String, Long> countContactsByStateFromDb() {
-        return addressBookDbService.countContactsByState();
+    public CompletableFuture<Map<String, Long>> countContactsByStateFromDb() {
+        return addressBookDbService.countContactsByStateAsync();
     }
 
     @PostMapping("/db/contacts")
-    public ResponseEntity<Contact> addContactToDb(
+        public CompletableFuture<ResponseEntity<Contact>> addContactToDb(
             @RequestParam String addressBookName,
             @RequestBody ContactRequest request) {
-        return addressBookDbService.addContactToDb(addressBookName, request)
+        return addressBookDbService.addContactToDbAsync(addressBookName, request)
+            .thenApply(result -> result
                 .map(contact -> ResponseEntity.status(HttpStatus.CREATED).body(contact))
-                .orElseGet(() -> ResponseEntity.status(HttpStatus.BAD_REQUEST).build());
+                .orElseGet(() -> ResponseEntity.status(HttpStatus.BAD_REQUEST).build()));
     }
 
     @PostMapping("/db/contacts/bulk")
-    public ResponseEntity<List<Contact>> addContactsToDb(
+    public CompletableFuture<ResponseEntity<List<Contact>>> addContactsToDb(
             @RequestParam String addressBookName,
             @RequestBody List<ContactRequest> requests) {
-        List<Contact> created = addressBookDbService.addContactsToDb(addressBookName, requests);
-        if (created.isEmpty()) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
-        }
-        return ResponseEntity.status(HttpStatus.CREATED).body(created);
+        return addressBookDbService.addContactsToDbAsync(addressBookName, requests)
+                .thenApply(created -> {
+                    if (created.isEmpty()) {
+                        return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+                    }
+                    return ResponseEntity.status(HttpStatus.CREATED).body(created);
+                });
     }
 
     @PostMapping("/{name}/export")
-    public ResponseEntity<ApiResponse> exportAddressBook(
+    public CompletableFuture<ResponseEntity<ApiResponse>> exportAddressBook(
             @PathVariable String name,
             @RequestParam String path) {
-        boolean exported = addressBookService.exportAddressBook(name, path);
-        if (exported) {
-            return ResponseEntity.ok(new ApiResponse("Address book exported", Instant.now().toString()));
-        }
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                .body(new ApiResponse("Export failed", Instant.now().toString()));
+        return addressBookService.exportAddressBookAsync(name, path)
+                .thenApply(exported -> {
+                    if (exported) {
+                        return ResponseEntity.ok(new ApiResponse("Address book exported", Instant.now().toString()));
+                    }
+                    return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                            .body(new ApiResponse("Export failed", Instant.now().toString()));
+                });
     }
 
     @PostMapping("/{name}/import")
-    public ResponseEntity<ApiResponse> importAddressBook(
+    public CompletableFuture<ResponseEntity<ApiResponse>> importAddressBook(
             @PathVariable String name,
             @RequestParam String path) {
-        int addedCount = addressBookService.importAddressBook(name, path);
-        if (addedCount > 0) {
-            return ResponseEntity.ok(new ApiResponse("Imported contacts: " + addedCount, Instant.now().toString()));
-        }
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                .body(new ApiResponse("Import failed or no new contacts", Instant.now().toString()));
+        return addressBookService.importAddressBookAsync(name, path)
+                .thenApply(addedCount -> {
+                    if (addedCount > 0) {
+                        return ResponseEntity.ok(new ApiResponse("Imported contacts: " + addedCount, Instant.now().toString()));
+                    }
+                    return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                            .body(new ApiResponse("Import failed or no new contacts", Instant.now().toString()));
+                });
     }
 
     @PostMapping("/{name}/export-json")
-    public ResponseEntity<ApiResponse> exportAddressBookJson(
+    public CompletableFuture<ResponseEntity<ApiResponse>> exportAddressBookJson(
             @PathVariable String name,
             @RequestParam String path) {
-        boolean exported = addressBookService.exportAddressBookJson(name, path);
-        if (exported) {
-            return ResponseEntity.ok(new ApiResponse("Address book exported as JSON", Instant.now().toString()));
-        }
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                .body(new ApiResponse("Export failed", Instant.now().toString()));
+        return addressBookService.exportAddressBookJsonAsync(name, path)
+                .thenApply(exported -> {
+                    if (exported) {
+                        return ResponseEntity.ok(new ApiResponse("Address book exported as JSON", Instant.now().toString()));
+                    }
+                    return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                            .body(new ApiResponse("Export failed", Instant.now().toString()));
+                });
     }
 
     @PostMapping("/{name}/import-json")
-    public ResponseEntity<ApiResponse> importAddressBookJson(
+    public CompletableFuture<ResponseEntity<ApiResponse>> importAddressBookJson(
             @PathVariable String name,
             @RequestParam String path) {
-        int addedCount = addressBookService.importAddressBookJson(name, path);
-        if (addedCount > 0) {
-            return ResponseEntity.ok(new ApiResponse("Imported contacts: " + addedCount, Instant.now().toString()));
-        }
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                .body(new ApiResponse("Import failed or no new contacts", Instant.now().toString()));
+        return addressBookService.importAddressBookJsonAsync(name, path)
+                .thenApply(addedCount -> {
+                    if (addedCount > 0) {
+                        return ResponseEntity.ok(new ApiResponse("Imported contacts: " + addedCount, Instant.now().toString()));
+                    }
+                    return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                            .body(new ApiResponse("Import failed or no new contacts", Instant.now().toString()));
+                });
     }
 }

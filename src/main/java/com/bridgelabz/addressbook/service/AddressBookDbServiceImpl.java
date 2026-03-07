@@ -4,11 +4,13 @@ import com.bridgelabz.addressbook.dto.ContactRequest;
 import com.bridgelabz.addressbook.model.AddressBookEntry;
 import com.bridgelabz.addressbook.model.Contact;
 import com.bridgelabz.addressbook.repository.AddressBookJdbcRepository;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.TransactionTemplate;
 
 import java.time.LocalDateTime;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Executor;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -23,13 +25,16 @@ public class AddressBookDbServiceImpl implements AddressBookDbService {
     private final AddressBookJdbcRepository repository;
     private final AddressBookService addressBookService;
     private final TransactionTemplate transactionTemplate;
+    private final Executor ioExecutor;
 
     public AddressBookDbServiceImpl(AddressBookJdbcRepository repository,
                                     AddressBookService addressBookService,
-                                    TransactionTemplate transactionTemplate) {
+                                    TransactionTemplate transactionTemplate,
+                                    @Qualifier("ioExecutor") Executor ioExecutor) {
         this.repository = repository;
         this.addressBookService = addressBookService;
         this.transactionTemplate = transactionTemplate;
+        this.ioExecutor = ioExecutor;
     }
 
     @Override
@@ -81,34 +86,36 @@ public class AddressBookDbServiceImpl implements AddressBookDbService {
     }
 
     @Override
-    @Transactional
     public Optional<Contact> addContactToDb(String addressBookName, ContactRequest request) {
         if (addressBookName == null || addressBookName.isBlank()) {
             return Optional.empty();
         }
-        Contact contact = new Contact();
-        contact.setFirstName(request.getFirstName());
-        contact.setLastName(request.getLastName());
-        contact.setAddress(request.getAddress());
-        contact.setCity(request.getCity());
-        contact.setState(request.getState());
-        contact.setZip(request.getZip());
-        contact.setPhoneNumber(request.getPhoneNumber());
-        contact.setEmail(request.getEmail());
+        Contact created = transactionTemplate.execute(status -> {
+            Contact contact = new Contact();
+            contact.setFirstName(request.getFirstName());
+            contact.setLastName(request.getLastName());
+            contact.setAddress(request.getAddress());
+            contact.setCity(request.getCity());
+            contact.setState(request.getState());
+            contact.setZip(request.getZip());
+            contact.setPhoneNumber(request.getPhoneNumber());
+            contact.setEmail(request.getEmail());
 
-        long addressBookId = repository.findAddressBookIdByName(addressBookName)
-                .orElseGet(() -> repository.insertAddressBook(addressBookName));
-        if (addressBookId <= 0) {
-            return Optional.empty();
-        }
-        LocalDateTime now = LocalDateTime.now();
-        long contactId = repository.insertContact(addressBookId, contact, now);
-        if (contactId <= 0) {
-            return Optional.empty();
-        }
-        contact.setId(contactId);
-        contact.setDateAdded(now);
-        return Optional.of(contact);
+            long addressBookId = repository.findAddressBookIdByName(addressBookName)
+                    .orElseGet(() -> repository.insertAddressBook(addressBookName));
+            if (addressBookId <= 0) {
+                return null;
+            }
+            LocalDateTime now = LocalDateTime.now();
+            long contactId = repository.insertContact(addressBookId, contact, now);
+            if (contactId <= 0) {
+                return null;
+            }
+            contact.setId(contactId);
+            contact.setDateAdded(now);
+            return contact;
+        });
+        return Optional.ofNullable(created);
     }
 
     @Override
@@ -178,5 +185,45 @@ public class AddressBookDbServiceImpl implements AddressBookDbService {
             contact.setDateAdded(now);
             return contact;
         });
+    }
+
+    @Override
+    public CompletableFuture<List<AddressBookEntry>> getAllEntriesAsync() {
+        return CompletableFuture.supplyAsync(this::getAllEntries, ioExecutor);
+    }
+
+    @Override
+    public CompletableFuture<Optional<Contact>> getContactByNameAsync(String firstName, String lastName) {
+        return CompletableFuture.supplyAsync(() -> getContactByName(firstName, lastName), ioExecutor);
+    }
+
+    @Override
+    public CompletableFuture<Optional<Contact>> updateContactByNameAsync(String firstName, String lastName, ContactRequest request) {
+        return CompletableFuture.supplyAsync(() -> updateContactByName(firstName, lastName, request), ioExecutor);
+    }
+
+    @Override
+    public CompletableFuture<List<Contact>> getContactsAddedBetweenAsync(LocalDateTime start, LocalDateTime end) {
+        return CompletableFuture.supplyAsync(() -> getContactsAddedBetween(start, end), ioExecutor);
+    }
+
+    @Override
+    public CompletableFuture<java.util.Map<String, Long>> countContactsByCityAsync() {
+        return CompletableFuture.supplyAsync(this::countContactsByCity, ioExecutor);
+    }
+
+    @Override
+    public CompletableFuture<java.util.Map<String, Long>> countContactsByStateAsync() {
+        return CompletableFuture.supplyAsync(this::countContactsByState, ioExecutor);
+    }
+
+    @Override
+    public CompletableFuture<Optional<Contact>> addContactToDbAsync(String addressBookName, ContactRequest request) {
+        return CompletableFuture.supplyAsync(() -> addContactToDb(addressBookName, request), ioExecutor);
+    }
+
+    @Override
+    public CompletableFuture<List<Contact>> addContactsToDbAsync(String addressBookName, List<ContactRequest> requests) {
+        return CompletableFuture.supplyAsync(() -> addContactsToDb(addressBookName, requests), ioExecutor);
     }
 }
