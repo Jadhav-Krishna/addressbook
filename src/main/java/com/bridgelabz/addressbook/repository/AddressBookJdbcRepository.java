@@ -64,6 +64,23 @@ public class AddressBookJdbcRepository {
             WHERE c.date_added >= ? AND c.date_added <= ?
             ORDER BY c.date_added
             """;
+    private static final String SELECT_CONTACTS_BY_ADDRESS_BOOK = """
+            SELECT
+                c.id,
+                c.first_name,
+                c.last_name,
+                c.address,
+                c.city,
+                c.state,
+                c.zip,
+                c.phone_number,
+                c.email,
+                c.date_added
+            FROM contact c
+            INNER JOIN address_book ab ON ab.id = c.address_book_id
+            WHERE ab.name = ?
+            ORDER BY c.first_name, c.last_name
+            """;
             private static final String COUNT_BY_CITY = """
                 SELECT c.city, COUNT(*) AS total
                 FROM contact c
@@ -152,6 +169,13 @@ public class AddressBookJdbcRepository {
                     ps.setTimestamp(1, java.sql.Timestamp.valueOf(start));
                     ps.setTimestamp(2, java.sql.Timestamp.valueOf(end));
                 },
+                contactRowMapper());
+    }
+
+    public List<Contact> findContactsByAddressBookName(String addressBookName) {
+        return jdbcTemplate.query(
+                SELECT_CONTACTS_BY_ADDRESS_BOOK,
+                ps -> ps.setString(1, addressBookName),
                 contactRowMapper());
     }
 

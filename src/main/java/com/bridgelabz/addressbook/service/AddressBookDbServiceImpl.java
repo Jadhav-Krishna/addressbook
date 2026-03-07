@@ -157,6 +157,14 @@ public class AddressBookDbServiceImpl implements AddressBookDbService {
         return created;
     }
 
+    @Override
+    public List<Contact> getContactsByAddressBookName(String addressBookName) {
+        if (addressBookName == null || addressBookName.isBlank()) {
+            return List.of();
+        }
+        return repository.findContactsByAddressBookName(addressBookName);
+    }
+
     private Contact insertContactTransactional(long addressBookId, ContactRequest request) {
         return transactionTemplate.execute(status -> {
             Contact contact = new Contact();

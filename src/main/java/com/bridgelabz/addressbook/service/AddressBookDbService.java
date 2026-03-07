@@ -24,4 +24,6 @@ public interface AddressBookDbService {
     Optional<Contact> addContactToDb(String addressBookName, ContactRequest request);
 
     List<Contact> addContactsToDb(String addressBookName, List<ContactRequest> requests);
+
+    List<Contact> getContactsByAddressBookName(String addressBookName);
 }

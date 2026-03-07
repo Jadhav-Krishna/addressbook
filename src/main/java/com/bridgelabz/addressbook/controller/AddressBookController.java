@@ -4,10 +4,13 @@ import com.bridgelabz.addressbook.dto.AddContactResult;
 import com.bridgelabz.addressbook.dto.AddContactStatus;
 import com.bridgelabz.addressbook.dto.ApiResponse;
 import com.bridgelabz.addressbook.dto.ContactRequest;
+import com.bridgelabz.addressbook.datasource.AddressBookDataSourceRequest;
+import com.bridgelabz.addressbook.datasource.AddressBookDataSourceType;
 import com.bridgelabz.addressbook.model.AddressBookEntry;
 import com.bridgelabz.addressbook.model.Contact;
 import com.bridgelabz.addressbook.service.AddressBookService;
 import com.bridgelabz.addressbook.service.AddressBookDbService;
+import com.bridgelabz.addressbook.service.AddressBookPersistenceService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -30,11 +33,14 @@ import java.util.Map;
 public class AddressBookController {
     private final AddressBookService addressBookService;
     private final AddressBookDbService addressBookDbService;
+    private final AddressBookPersistenceService persistenceService;
 
     public AddressBookController(AddressBookService addressBookService,
-                                 AddressBookDbService addressBookDbService) {
+                                 AddressBookDbService addressBookDbService,
+                                 AddressBookPersistenceService persistenceService) {
         this.addressBookService = addressBookService;
         this.addressBookDbService = addressBookDbService;
+        this.persistenceService = persistenceService;
     }
 
     @PostMapping("/{name}")
@@ -252,5 +258,25 @@ public class AddressBookController {
         }
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                 .body(new ApiResponse("Import failed or no new contacts", Instant.now().toString()));
+    }
+
+    @PostMapping("/{name}/persist")
+    public ResponseEntity<ApiResponse> persistAddressBook(
+            @PathVariable String name,
+            @RequestParam AddressBookDataSourceType source,
+            @RequestParam(required = false) String path,
+            @RequestParam(required = false) String serverUrl,
+            @RequestParam(required = false) String serverEndpoint) {
+        AddressBookDataSourceRequest request = new AddressBookDataSourceRequest(
+                name,
+                path,
+                serverUrl,
+                serverEndpoint);
+        int saved = persistenceService.save(source, request);
+        if (saved > 0) {
+            return ResponseEntity.ok(new ApiResponse("Saved entries: " + saved, Instant.now().toString()));
+        }
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(new ApiResponse("Save failed", Instant.now().toString()));
     }
 }
