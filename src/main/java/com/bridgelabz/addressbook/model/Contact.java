@@ -32,6 +32,27 @@ public class Contact {
     private String email;
     private LocalDateTime dateAdded;
 
+    public Contact(Long id,
+                   String firstName,
+                   String lastName,
+                   String address,
+                   String city,
+                   String state,
+                   String zip,
+                   String phoneNumber,
+                   String email) {
+        this.id = id;
+        this.firstName = firstName;
+        this.lastName = lastName;
+        this.address = address;
+        this.city = city;
+        this.state = state;
+        this.zip = zip;
+        this.phoneNumber = phoneNumber;
+        this.email = email;
+        this.dateAdded = LocalDateTime.now();
+    }
+
     @Override
     public boolean equals(Object other) {
         if (this == other) {
