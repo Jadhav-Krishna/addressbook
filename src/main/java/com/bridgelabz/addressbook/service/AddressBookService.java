@@ -43,4 +43,6 @@ public interface AddressBookService {
     boolean exportAddressBookJson(String name, String filePath);
 
     int importAddressBookJson(String name, String filePath);
+
+    boolean syncContactByName(Contact contact);
 }

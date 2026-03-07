@@ -147,6 +147,25 @@ public class AddressBookController {
         return addressBookDbService.getAllEntries();
     }
 
+    @GetMapping("/db/contacts")
+    public ResponseEntity<Contact> getContactFromDb(
+            @RequestParam String firstName,
+            @RequestParam String lastName) {
+        return addressBookDbService.getContactByName(firstName, lastName)
+                .map(ResponseEntity::ok)
+                .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).build());
+    }
+
+    @PutMapping("/db/contacts")
+    public ResponseEntity<Contact> updateContactInDb(
+            @RequestParam String firstName,
+            @RequestParam String lastName,
+            @RequestBody ContactRequest request) {
+        return addressBookDbService.updateContactByName(firstName, lastName, request)
+                .map(ResponseEntity::ok)
+                .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).build());
+    }
+
     @PostMapping("/{name}/export")
     public ResponseEntity<ApiResponse> exportAddressBook(
             @PathVariable String name,

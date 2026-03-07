@@ -345,6 +345,38 @@ public class AddressBookServiceImpl implements AddressBookService {
         }
     }
 
+    @Override
+    public boolean syncContactByName(Contact contact) {
+        if (contact == null) {
+            return false;
+        }
+        for (AddressBookStore store : addressBooks.values()) {
+            for (int index = 0; index < store.contacts.size(); index++) {
+                Contact existing = store.contacts.get(index);
+                if (contact.equals(existing)) {
+                    removeFromIndex(cityIndex, existing.getCity(), existing);
+                    removeFromIndex(stateIndex, existing.getState(), existing);
+                    Contact updated = new Contact(
+                            existing.getId(),
+                            contact.getFirstName(),
+                            contact.getLastName(),
+                            contact.getAddress(),
+                            contact.getCity(),
+                            contact.getState(),
+                            contact.getZip(),
+                            contact.getPhoneNumber(),
+                            contact.getEmail()
+                    );
+                    store.contacts.set(index, updated);
+                    addToIndex(cityIndex, updated.getCity(), updated);
+                    addToIndex(stateIndex, updated.getState(), updated);
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
     private String[] toCsvRow(Contact contact) {
         return new String[] {
                 nullToEmpty(contact.getFirstName()),

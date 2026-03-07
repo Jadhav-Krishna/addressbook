@@ -1,11 +1,13 @@
 package com.bridgelabz.addressbook.repository;
 
 import com.bridgelabz.addressbook.model.AddressBookEntry;
+import com.bridgelabz.addressbook.model.Contact;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public class AddressBookJdbcRepository {
@@ -26,6 +28,25 @@ public class AddressBookJdbcRepository {
             LEFT JOIN contact c ON c.address_book_id = ab.id
             ORDER BY ab.name, c.first_name, c.last_name
             """;
+    private static final String SELECT_CONTACT_BY_NAME = """
+            SELECT
+                c.id,
+                c.first_name,
+                c.last_name,
+                c.address,
+                c.city,
+                c.state,
+                c.zip,
+                c.phone_number,
+                c.email
+            FROM contact c
+            WHERE c.first_name = ? AND c.last_name = ?
+            """;
+    private static final String UPDATE_CONTACT_BY_NAME = """
+            UPDATE contact
+            SET address = ?, city = ?, state = ?, zip = ?, phone_number = ?, email = ?
+            WHERE first_name = ? AND last_name = ?
+            """;
 
     private final JdbcTemplate jdbcTemplate;
 
@@ -35,6 +56,36 @@ public class AddressBookJdbcRepository {
 
     public List<AddressBookEntry> findAllEntries() {
         return jdbcTemplate.query(SELECT_ALL_ENTRIES, rowMapper());
+    }
+
+    public Optional<Contact> findContactByName(String firstName, String lastName) {
+        List<Contact> matches = jdbcTemplate.query(
+                SELECT_CONTACT_BY_NAME,
+                ps -> {
+                    ps.setString(1, firstName);
+                    ps.setString(2, lastName);
+                },
+                contactRowMapper());
+        if (matches.isEmpty()) {
+            return Optional.empty();
+        }
+        return Optional.of(matches.get(0));
+    }
+
+    public boolean updateContactByName(String firstName, String lastName, Contact updated) {
+        int updatedRows = jdbcTemplate.update(
+                UPDATE_CONTACT_BY_NAME,
+                ps -> {
+                    ps.setString(1, updated.getAddress());
+                    ps.setString(2, updated.getCity());
+                    ps.setString(3, updated.getState());
+                    ps.setString(4, updated.getZip());
+                    ps.setString(5, updated.getPhoneNumber());
+                    ps.setString(6, updated.getEmail());
+                    ps.setString(7, firstName);
+                    ps.setString(8, lastName);
+                });
+        return updatedRows > 0;
     }
 
     private RowMapper<AddressBookEntry> rowMapper() {
@@ -57,6 +108,22 @@ public class AddressBookJdbcRepository {
             entry.setPhoneNumber(rs.getString("phone_number"));
             entry.setEmail(rs.getString("email"));
             return entry;
+        };
+    }
+
+    private RowMapper<Contact> contactRowMapper() {
+        return (rs, rowNum) -> {
+            Contact contact = new Contact();
+            contact.setId(rs.getLong("id"));
+            contact.setFirstName(rs.getString("first_name"));
+            contact.setLastName(rs.getString("last_name"));
+            contact.setAddress(rs.getString("address"));
+            contact.setCity(rs.getString("city"));
+            contact.setState(rs.getString("state"));
+            contact.setZip(rs.getString("zip"));
+            contact.setPhoneNumber(rs.getString("phone_number"));
+            contact.setEmail(rs.getString("email"));
+            return contact;
         };
     }
 }
