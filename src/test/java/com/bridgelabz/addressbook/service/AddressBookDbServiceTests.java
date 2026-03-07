@@ -23,11 +23,8 @@ class AddressBookDbServiceTests {
     @Test
     void getAllEntries_returnsSeededRows() {
         List<AddressBookEntry> entries = dbService.getAllEntries();
-
         assertThat(entries).isNotEmpty();
-        assertThat(entries)
-                .anyMatch(entry -> "Personal".equals(entry.getAddressBookName()));
-        assertThat(entries)
-                .anyMatch(entry -> "Ada".equals(entry.getFirstName()));
+        assertThat(entries).anyMatch(entry -> "Personal".equals(entry.getAddressBookName()));
+        assertThat(entries).anyMatch(entry -> "Ada".equals(entry.getFirstName()));
     }
 }
