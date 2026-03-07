@@ -23,6 +23,8 @@ public class AddressBookServiceImpl implements AddressBookService {
     }
 
     private final Map<String, AddressBookStore> addressBooks = new ConcurrentHashMap<>();
+    private final Map<String, List<Contact>> cityIndex = new ConcurrentHashMap<>();
+    private final Map<String, List<Contact>> stateIndex = new ConcurrentHashMap<>();
 
     @Override
     public boolean createAddressBook(String name) {
@@ -82,6 +84,8 @@ public class AddressBookServiceImpl implements AddressBookService {
                 request.getEmail()
         );
         store.contacts.add(contact);
+        addToIndex(cityIndex, contact.getCity(), contact);
+        addToIndex(stateIndex, contact.getState(), contact);
             return new AddContactResult(AddContactStatus.CREATED, contact);
     }
 
@@ -94,6 +98,8 @@ public class AddressBookServiceImpl implements AddressBookService {
         for (int index = 0; index < store.contacts.size(); index++) {
             Contact existing = store.contacts.get(index);
             if (existing.getId() != null && existing.getId() == id) {
+                removeFromIndex(cityIndex, existing.getCity(), existing);
+                removeFromIndex(stateIndex, existing.getState(), existing);
                 Contact updated = new Contact(
                         id,
                         request.getFirstName(),
@@ -106,6 +112,8 @@ public class AddressBookServiceImpl implements AddressBookService {
                         request.getEmail()
                 );
                 store.contacts.set(index, updated);
+                addToIndex(cityIndex, updated.getCity(), updated);
+                addToIndex(stateIndex, updated.getState(), updated);
                 return Optional.of(updated);
             }
         }
@@ -123,6 +131,8 @@ public class AddressBookServiceImpl implements AddressBookService {
             Contact contact = iterator.next();
             if (contact.getId() != null && contact.getId() == id) {
                 iterator.remove();
+                removeFromIndex(cityIndex, contact.getCity(), contact);
+                removeFromIndex(stateIndex, contact.getState(), contact);
                 return true;
             }
         }
@@ -131,17 +141,41 @@ public class AddressBookServiceImpl implements AddressBookService {
 
     @Override
     public List<Contact> searchByCity(String city) {
-        return addressBooks.values().stream()
-                .flatMap(store -> store.contacts.stream())
-                .filter(contact -> contact.getCity() != null && contact.getCity().equals(city))
-                .toList();
+        List<Contact> matches = cityIndex.get(city);
+        if (matches == null) {
+            return List.of();
+        }
+        return new ArrayList<>(matches);
     }
 
     @Override
     public List<Contact> searchByState(String state) {
-        return addressBooks.values().stream()
-                .flatMap(store -> store.contacts.stream())
-                .filter(contact -> contact.getState() != null && contact.getState().equals(state))
-                .toList();
+        List<Contact> matches = stateIndex.get(state);
+        if (matches == null) {
+            return List.of();
+        }
+        return new ArrayList<>(matches);
+    }
+
+    private void addToIndex(Map<String, List<Contact>> index, String key, Contact contact) {
+        if (key == null || key.isBlank()) {
+            return;
+        }
+        index.computeIfAbsent(key, value -> new ArrayList<>()).add(contact);
+    }
+
+    private void removeFromIndex(Map<String, List<Contact>> index, String key, Contact contact) {
+        if (key == null || key.isBlank()) {
+            return;
+        }
+        List<Contact> contacts = index.get(key);
+        if (contacts == null) {
+            return;
+        }
+        Long id = contact.getId();
+        contacts.removeIf(existing -> id != null && id.equals(existing.getId()));
+        if (contacts.isEmpty()) {
+            index.remove(key);
+        }
     }
 }
