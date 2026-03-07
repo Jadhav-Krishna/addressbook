@@ -11,6 +11,7 @@ import org.springframework.context.annotation.Import;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
+import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -66,5 +67,20 @@ class AddressBookDbServiceTests {
 
         assertThat(contacts).isNotEmpty();
         assertThat(contacts).allMatch(contact -> "Ada".equals(contact.getFirstName()));
+    }
+
+    @Test
+    void countContactsByCity_returnsCounts() {
+        Map<String, Long> counts = dbService.countContactsByCity();
+
+        assertThat(counts).containsEntry("Pune", 1L);
+        assertThat(counts).containsEntry("Mumbai", 1L);
+    }
+
+    @Test
+    void countContactsByState_returnsCounts() {
+        Map<String, Long> counts = dbService.countContactsByState();
+
+        assertThat(counts).containsEntry("MH", 2L);
     }
 }

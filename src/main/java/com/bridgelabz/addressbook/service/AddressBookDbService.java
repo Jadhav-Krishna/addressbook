@@ -16,4 +16,8 @@ public interface AddressBookDbService {
     Optional<Contact> updateContactByName(String firstName, String lastName, ContactRequest request);
 
     List<Contact> getContactsAddedBetween(LocalDateTime start, LocalDateTime end);
+
+    java.util.Map<String, Long> countContactsByCity();
+
+    java.util.Map<String, Long> countContactsByState();
 }

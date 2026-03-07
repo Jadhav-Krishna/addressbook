@@ -60,6 +60,18 @@ public class AddressBookJdbcRepository {
             WHERE c.date_added >= ? AND c.date_added <= ?
             ORDER BY c.date_added
             """;
+            private static final String COUNT_BY_CITY = """
+                SELECT c.city, COUNT(*) AS total
+                FROM contact c
+                WHERE c.city IS NOT NULL AND c.city <> ''
+                GROUP BY c.city
+                """;
+            private static final String COUNT_BY_STATE = """
+                SELECT c.state, COUNT(*) AS total
+                FROM contact c
+                WHERE c.state IS NOT NULL AND c.state <> ''
+                GROUP BY c.state
+                """;
         private static final String UPDATE_CONTACT_BY_NAME = """
             UPDATE contact
             SET address = ?, city = ?, state = ?, zip = ?, phone_number = ?, email = ?
@@ -114,6 +126,26 @@ public class AddressBookJdbcRepository {
                     ps.setTimestamp(2, java.sql.Timestamp.valueOf(end));
                 },
                 contactRowMapper());
+    }
+
+    public java.util.Map<String, Long> countByCity() {
+        return jdbcTemplate.query(COUNT_BY_CITY, rs -> {
+            java.util.Map<String, Long> results = new java.util.LinkedHashMap<>();
+            while (rs.next()) {
+                results.put(rs.getString("city"), rs.getLong("total"));
+            }
+            return results;
+        });
+    }
+
+    public java.util.Map<String, Long> countByState() {
+        return jdbcTemplate.query(COUNT_BY_STATE, rs -> {
+            java.util.Map<String, Long> results = new java.util.LinkedHashMap<>();
+            while (rs.next()) {
+                results.put(rs.getString("state"), rs.getLong("total"));
+            }
+            return results;
+        });
     }
 
     private RowMapper<AddressBookEntry> rowMapper() {

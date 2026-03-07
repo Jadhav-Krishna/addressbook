@@ -58,4 +58,14 @@ public class AddressBookDbServiceImpl implements AddressBookDbService {
     public List<Contact> getContactsAddedBetween(LocalDateTime start, LocalDateTime end) {
         return repository.findContactsAddedBetween(start, end);
     }
+
+    @Override
+    public java.util.Map<String, Long> countContactsByCity() {
+        return repository.countByCity();
+    }
+
+    @Override
+    public java.util.Map<String, Long> countContactsByState() {
+        return repository.countByState();
+    }
 }

@@ -176,6 +176,16 @@ public class AddressBookController {
         return addressBookDbService.getContactsAddedBetween(startDateTime, endDateTime);
     }
 
+    @GetMapping("/db/contacts/count/city")
+    public Map<String, Long> countContactsByCityFromDb() {
+        return addressBookDbService.countContactsByCity();
+    }
+
+    @GetMapping("/db/contacts/count/state")
+    public Map<String, Long> countContactsByStateFromDb() {
+        return addressBookDbService.countContactsByState();
+    }
+
     @PostMapping("/{name}/export")
     public ResponseEntity<ApiResponse> exportAddressBook(
             @PathVariable String name,
