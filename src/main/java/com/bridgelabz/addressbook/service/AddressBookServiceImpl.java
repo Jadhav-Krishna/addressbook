@@ -6,6 +6,14 @@ import com.bridgelabz.addressbook.dto.ContactRequest;
 import com.bridgelabz.addressbook.model.Contact;
 import org.springframework.stereotype.Service;
 
+import com.opencsv.CSVReader;
+import com.opencsv.CSVWriter;
+
+import java.io.Reader;
+import java.io.Writer;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -16,10 +24,6 @@ import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.StandardOpenOption;
-import java.util.stream.Stream;
 
 @Service
 public class AddressBookServiceImpl implements AddressBookService {
@@ -142,7 +146,7 @@ public class AddressBookServiceImpl implements AddressBookService {
         store.contacts.add(contact);
         addToIndex(cityIndex, contact.getCity(), contact);
         addToIndex(stateIndex, contact.getState(), contact);
-            return new AddContactResult(AddContactStatus.CREATED, contact);
+        return new AddContactResult(AddContactStatus.CREATED, contact);
     }
 
     @Override
@@ -235,13 +239,22 @@ public class AddressBookServiceImpl implements AddressBookService {
         if (store == null || filePath == null || filePath.isBlank()) {
             return false;
         }
-        List<String> lines = new ArrayList<>();
-        lines.add("firstName,lastName,address,city,state,zip,phoneNumber,email");
-        store.contacts.stream()
-                .map(this::toCsvLine)
-                .forEach(lines::add);
-        try {
-            Files.write(Path.of(filePath), lines, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
+        Path path = Path.of(filePath);
+        try (Writer writer = Files.newBufferedWriter(path, StandardCharsets.UTF_8);
+             CSVWriter csvWriter = new CSVWriter(writer)) {
+            csvWriter.writeNext(new String[] {
+                    "firstName",
+                    "lastName",
+                    "address",
+                    "city",
+                    "state",
+                    "zip",
+                    "phoneNumber",
+                    "email"
+            });
+            for (Contact contact : store.contacts) {
+                csvWriter.writeNext(toCsvRow(contact));
+            }
             return true;
         } catch (Exception ex) {
             return false;
@@ -258,21 +271,31 @@ public class AddressBookServiceImpl implements AddressBookService {
         if (!Files.exists(path)) {
             return 0;
         }
-        try (Stream<String> lines = Files.lines(path)) {
-            return (int) lines
-                    .skip(1)
-                    .map(this::parseCsvLine)
-                    .filter(parsed -> parsed != null)
-                    .map(parsed -> addContact(name, parsed))
-                    .filter(result -> result.getStatus() == AddContactStatus.CREATED)
-                    .count();
+        try (Reader reader = Files.newBufferedReader(path, StandardCharsets.UTF_8);
+             CSVReader csvReader = new CSVReader(reader)) {
+            String[] row = csvReader.readNext();
+            if (row == null) {
+                return 0;
+            }
+            int added = 0;
+            while ((row = csvReader.readNext()) != null) {
+                ContactRequest request = parseCsvRow(row);
+                if (request == null) {
+                    continue;
+                }
+                AddContactResult result = addContact(name, request);
+                if (result.getStatus() == AddContactStatus.CREATED) {
+                    added++;
+                }
+            }
+            return added;
         } catch (Exception ex) {
             return 0;
         }
     }
 
-    private String toCsvLine(Contact contact) {
-        return String.join(",",
+    private String[] toCsvRow(Contact contact) {
+        return new String[] {
                 nullToEmpty(contact.getFirstName()),
                 nullToEmpty(contact.getLastName()),
                 nullToEmpty(contact.getAddress()),
@@ -280,26 +303,23 @@ public class AddressBookServiceImpl implements AddressBookService {
                 nullToEmpty(contact.getState()),
                 nullToEmpty(contact.getZip()),
                 nullToEmpty(contact.getPhoneNumber()),
-                nullToEmpty(contact.getEmail()));
+                nullToEmpty(contact.getEmail())
+        };
     }
 
-    private ContactRequest parseCsvLine(String line) {
-        if (line == null || line.isBlank()) {
-            return null;
-        }
-        String[] parts = line.split(",", -1);
-        if (parts.length < 8) {
+    private ContactRequest parseCsvRow(String[] row) {
+        if (row == null || row.length < 8) {
             return null;
         }
         ContactRequest request = new ContactRequest();
-        request.setFirstName(parts[0]);
-        request.setLastName(parts[1]);
-        request.setAddress(parts[2]);
-        request.setCity(parts[3]);
-        request.setState(parts[4]);
-        request.setZip(parts[5]);
-        request.setPhoneNumber(parts[6]);
-        request.setEmail(parts[7]);
+        request.setFirstName(row[0]);
+        request.setLastName(row[1]);
+        request.setAddress(row[2]);
+        request.setCity(row[3]);
+        request.setState(row[4]);
+        request.setZip(row[5]);
+        request.setPhoneNumber(row[6]);
+        request.setEmail(row[7]);
         return request;
     }
 
