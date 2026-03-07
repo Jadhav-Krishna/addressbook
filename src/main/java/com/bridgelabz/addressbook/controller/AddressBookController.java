@@ -1,5 +1,8 @@
 package com.bridgelabz.addressbook.controller;
 
+import com.bridgelabz.addressbook.dto.AddContactResult;
+import com.bridgelabz.addressbook.dto.AddContactStatus;
+import com.bridgelabz.addressbook.dto.ApiResponse;
 import com.bridgelabz.addressbook.dto.ContactRequest;
 import com.bridgelabz.addressbook.model.Contact;
 import com.bridgelabz.addressbook.service.AddressBookService;
@@ -14,6 +17,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.time.Instant;
 import java.util.List;
 
 @RestController
@@ -47,12 +51,19 @@ public class AddressBookController {
     }
 
     @PostMapping("/{name}/contacts")
-    public ResponseEntity<Contact> addContact(
+    public ResponseEntity<?> addContact(
             @PathVariable String name,
             @RequestBody ContactRequest request) {
-        return addressBookService.addContact(name, request)
-                .map(contact -> ResponseEntity.status(HttpStatus.CREATED).body(contact))
-                .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).build());
+        AddContactResult result = addressBookService.addContact(name, request);
+        if (result.getStatus() == AddContactStatus.CREATED) {
+            return ResponseEntity.status(HttpStatus.CREATED).body(result.getContact());
+        }
+        if (result.getStatus() == AddContactStatus.DUPLICATE_NAME) {
+            return ResponseEntity.status(HttpStatus.CONFLICT)
+                    .body(new ApiResponse("Duplicate person name in address book", Instant.now().toString()));
+        }
+        return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                .body(new ApiResponse("Address book not found", Instant.now().toString()));
     }
 
     @PutMapping("/{name}/contacts/{id}")

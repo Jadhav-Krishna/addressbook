@@ -1,5 +1,7 @@
 package com.bridgelabz.addressbook.service;
 
+import com.bridgelabz.addressbook.dto.AddContactResult;
+import com.bridgelabz.addressbook.dto.AddContactStatus;
 import com.bridgelabz.addressbook.dto.ContactRequest;
 import com.bridgelabz.addressbook.model.Contact;
 import org.springframework.stereotype.Service;
@@ -47,10 +49,25 @@ public class AddressBookServiceImpl implements AddressBookService {
     }
 
     @Override
-    public Optional<Contact> addContact(String name, ContactRequest request) {
+    public AddContactResult addContact(String name, ContactRequest request) {
         AddressBookStore store = addressBooks.get(name);
         if (store == null) {
-            return Optional.empty();
+            return new AddContactResult(AddContactStatus.ADDRESS_BOOK_NOT_FOUND, null);
+        }
+        Contact candidate = new Contact(
+                null,
+                request.getFirstName(),
+                request.getLastName(),
+                request.getAddress(),
+                request.getCity(),
+                request.getState(),
+                request.getZip(),
+                request.getPhoneNumber(),
+                request.getEmail()
+        );
+        boolean duplicate = store.contacts.stream().anyMatch(candidate::equals);
+        if (duplicate) {
+            return new AddContactResult(AddContactStatus.DUPLICATE_NAME, null);
         }
         long id = store.idGenerator.incrementAndGet();
         Contact contact = new Contact(
@@ -65,7 +82,7 @@ public class AddressBookServiceImpl implements AddressBookService {
                 request.getEmail()
         );
         store.contacts.add(contact);
-        return Optional.of(contact);
+            return new AddContactResult(AddContactStatus.CREATED, contact);
     }
 
     @Override

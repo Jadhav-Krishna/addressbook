@@ -1,5 +1,6 @@
 package com.bridgelabz.addressbook.service;
 
+import com.bridgelabz.addressbook.dto.AddContactResult;
 import com.bridgelabz.addressbook.dto.ContactRequest;
 import com.bridgelabz.addressbook.model.Contact;
 
@@ -13,7 +14,7 @@ public interface AddressBookService {
 
     Optional<List<Contact>> getContacts(String name);
 
-    Optional<Contact> addContact(String name, ContactRequest request);
+    AddContactResult addContact(String name, ContactRequest request);
 
     Optional<Contact> updateContact(String name, long id, ContactRequest request);
 
