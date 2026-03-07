@@ -18,4 +18,6 @@ public interface ContactService {
     Optional<Contact> updateContactByFirstName(String firstName, ContactRequest request);
 
     boolean deleteContact(long id);
+
+    boolean deleteContactByFirstName(String firstName);
 }

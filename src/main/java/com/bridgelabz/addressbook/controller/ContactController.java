@@ -67,4 +67,13 @@ public class ContactController {
         }
         return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
     }
+
+    @DeleteMapping("/name/{name}")
+    public ResponseEntity<Void> deleteContactByFirstName(@PathVariable String name) {
+        boolean deleted = contactService.deleteContactByFirstName(name);
+        if (deleted) {
+            return ResponseEntity.noContent().build();
+        }
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+    }
 }
