@@ -1,0 +1,598 @@
+{
+  "info": {
+    "_postman_id": "05828df2-162f-461f-b139-3ab415ec52d9",
+    "name": "AddressBook",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "35135881"
+  },
+  "item": [
+    {
+      "name": "Sorting",
+      "item": [
+        {
+          "name": "Sort by name",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base}}/Ada/contacts/sorted-by-name",
+              "host": [
+                "{{base}}"
+              ],
+              "path": [
+                "Ada",
+                "contacts",
+                "sorted-by-name"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "sorted by city",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base}}/Ada/contacts/sorted-by-city",
+              "host": [
+                "{{base}}"
+              ],
+              "path": [
+                "Ada",
+                "contacts",
+                "sorted-by-city"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "sorted by state",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base}}/Ada/contacts/sorted-by-state",
+              "host": [
+                "{{base}}"
+              ],
+              "path": [
+                "Ada",
+                "contacts",
+                "sorted-by-state"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "sorted by zip",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base}}/Ada/contacts/sorted-by-zip",
+              "host": [
+                "{{base}}"
+              ],
+              "path": [
+                "Ada",
+                "contacts",
+                "sorted-by-zip"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Contacts",
+      "item": [
+        {
+          "name": "Get contacts",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base}}/Ada/contacts",
+              "host": [
+                "{{base}}"
+              ],
+              "path": [
+                "Ada",
+                "contacts"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Create",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "  {\r\n    \"firstName\": \"Shna\",\r\n    \"lastName\": \"Gurjar\",\r\n    \"address\": \"Indrapuri Bhopal\",\r\n    \"city\": \"bhopal\",\r\n    \"state\": \"MP\",\r\n    \"zip\": \"420001\",\r\n    \"phoneNumber\": \"9876543210\",\r\n    \"email\": \"shna@example.com\"\r\n  }",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base}}/Ada/contacts",
+              "host": [
+                "{{base}}"
+              ],
+              "path": [
+                "Ada",
+                "contacts"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Update",
+          "request": {
+            "method": "PUT",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "  {\r\n    \"firstName\": \"Shivam\",\r\n    \"lastName\": \"xyz\",\r\n    \"address\": \"Indrapuri Bhopal\",\r\n    \"city\": \"bhopal\",\r\n    \"state\": \"MP\",\r\n    \"zip\": \"420001\",\r\n    \"phoneNumber\": \"9976569810\",\r\n    \"email\": \"shivam@example.com\"\r\n  }",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base}}/Ada/contacts/1",
+              "host": [
+                "{{base}}"
+              ],
+              "path": [
+                "Ada",
+                "contacts",
+                "1"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Delete",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{base}}/shivam/contacts/1",
+              "host": [
+                "{{base}}"
+              ],
+              "path": [
+                "shivam",
+                "contacts",
+                "1"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Search + Counts",
+      "item": [
+        {
+          "name": "search sort by city",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base}}/search/city/bhopal",
+              "host": [
+                "{{base}}"
+              ],
+              "path": [
+                "search",
+                "city",
+                "bhopal"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Count by city",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base}}/search/count/city",
+              "host": [
+                "{{base}}"
+              ],
+              "path": [
+                "search",
+                "count",
+                "city"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Count by state",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base}}/search/count/state",
+              "host": [
+                "{{base}}"
+              ],
+              "path": [
+                "search",
+                "count",
+                "state"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "search sort by state",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base}}/search/state/MP",
+              "host": [
+                "{{base}}"
+              ],
+              "path": [
+                "search",
+                "state",
+                "MP"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "DB (JDBC)",
+      "item": [
+        {
+          "name": "All entries",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base}}/db/entries",
+              "host": [
+                "{{base}}"
+              ],
+              "path": [
+                "db",
+                "entries"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get by name",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base}}/db/contacts?firstName=Ada&lastName=Lovelace",
+              "host": [
+                "{{base}}"
+              ],
+              "path": [
+                "db",
+                "contacts"
+              ],
+              "query": [
+                {
+                  "key": "firstName",
+                  "value": "Ada"
+                },
+                {
+                  "key": "lastName",
+                  "value": "Lovelace"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Update entity",
+          "request": {
+            "method": "PUT",
+            "header": [],
+            "url": {
+              "raw": "{{base}}/db/contacts?firstName=Ada&lastName=Lovelace",
+              "host": [
+                "{{base}}"
+              ],
+              "path": [
+                "db",
+                "contacts"
+              ],
+              "query": [
+                {
+                  "key": "firstName",
+                  "value": "Ada"
+                },
+                {
+                  "key": "lastName",
+                  "value": "Lovelace"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get by time duration",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base}}/db/contacts/period?start=2026-03-01T00:00:00&end=2026-03-03T23:59:59",
+              "host": [
+                "{{base}}"
+              ],
+              "path": [
+                "db",
+                "contacts",
+                "period"
+              ],
+              "query": [
+                {
+                  "key": "start",
+                  "value": "2026-03-01T00:00:00"
+                },
+                {
+                  "key": "end",
+                  "value": "2026-03-03T23:59:59"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Count by city",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base}}/db/contacts/count/city",
+              "host": [
+                "{{base}}"
+              ],
+              "path": [
+                "db",
+                "contacts",
+                "count",
+                "city"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "count by state",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base}}/db/contacts/count/state",
+              "host": [
+                "{{base}}"
+              ],
+              "path": [
+                "db",
+                "contacts",
+                "count",
+                "state"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "New Request",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{base}}/db/contacts?addressBookName=Personal",
+              "host": [
+                "{{base}}"
+              ],
+              "path": [
+                "db",
+                "contacts"
+              ],
+              "query": [
+                {
+                  "key": "addressBookName",
+                  "value": "Personal"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "New Request",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{base}}/db/contacts/bulk?addressBookName=Personal",
+              "host": [
+                "{{base}}"
+              ],
+              "path": [
+                "db",
+                "contacts",
+                "bulk"
+              ],
+              "query": [
+                {
+                  "key": "addressBookName",
+                  "value": "Personal"
+                }
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "File IO",
+      "item": [
+        {
+          "name": "New Request",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{base}}/shna/export?path=C:/temp/book.csv",
+              "host": [
+                "{{base}}"
+              ],
+              "path": [
+                "shna",
+                "export"
+              ],
+              "query": [
+                {
+                  "key": "path",
+                  "value": "C:/temp/book.csv"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "New Request",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{base}}/shna/import?path=C:/temp/book.csv",
+              "host": [
+                "{{base}}"
+              ],
+              "path": [
+                "shna",
+                "import"
+              ],
+              "query": [
+                {
+                  "key": "path",
+                  "value": "C:/temp/book.csv"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "New Request",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{base}}/shna/export-json?path=C:/temp/book.json",
+              "host": [
+                "{{base}}"
+              ],
+              "path": [
+                "shna",
+                "export-json"
+              ],
+              "query": [
+                {
+                  "key": "path",
+                  "value": "C:/temp/book.json"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "New Request",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{base}}/shna/import-json?path=C:/temp/book.json",
+              "host": [
+                "{{base}}"
+              ],
+              "path": [
+                "shna",
+                "import-json"
+              ],
+              "query": [
+                {
+                  "key": "path",
+                  "value": "C:/temp/book.json"
+                }
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "All users",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base}}",
+          "host": [
+            "{{base}}"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "create new",
+      "request": {
+        "method": "POST",
+        "header": [],
+        "url": {
+          "raw": "{{base}}/name",
+          "host": [
+            "{{base}}"
+          ],
+          "path": [
+            "name"
+          ]
+        }
+      },
+      "response": []
+    }
+  ]
+}
