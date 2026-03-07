@@ -39,4 +39,8 @@ public interface AddressBookService {
     boolean exportAddressBook(String name, String filePath);
 
     int importAddressBook(String name, String filePath);
+
+    boolean exportAddressBookJson(String name, String filePath);
+
+    int importAddressBookJson(String name, String filePath);
 }

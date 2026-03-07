@@ -160,4 +160,28 @@ public class AddressBookController {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                 .body(new ApiResponse("Import failed or no new contacts", Instant.now().toString()));
     }
+
+    @PostMapping("/{name}/export-json")
+    public ResponseEntity<ApiResponse> exportAddressBookJson(
+            @PathVariable String name,
+            @RequestParam String path) {
+        boolean exported = addressBookService.exportAddressBookJson(name, path);
+        if (exported) {
+            return ResponseEntity.ok(new ApiResponse("Address book exported as JSON", Instant.now().toString()));
+        }
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(new ApiResponse("Export failed", Instant.now().toString()));
+    }
+
+    @PostMapping("/{name}/import-json")
+    public ResponseEntity<ApiResponse> importAddressBookJson(
+            @PathVariable String name,
+            @RequestParam String path) {
+        int addedCount = addressBookService.importAddressBookJson(name, path);
+        if (addedCount > 0) {
+            return ResponseEntity.ok(new ApiResponse("Imported contacts: " + addedCount, Instant.now().toString()));
+        }
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(new ApiResponse("Import failed or no new contacts", Instant.now().toString()));
+    }
 }

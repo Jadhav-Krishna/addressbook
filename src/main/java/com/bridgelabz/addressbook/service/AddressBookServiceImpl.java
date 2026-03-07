@@ -6,6 +6,8 @@ import com.bridgelabz.addressbook.dto.ContactRequest;
 import com.bridgelabz.addressbook.model.Contact;
 import org.springframework.stereotype.Service;
 
+import com.google.gson.Gson;
+import com.google.gson.JsonSyntaxException;
 import com.opencsv.CSVReader;
 import com.opencsv.CSVWriter;
 
@@ -27,6 +29,7 @@ import java.util.stream.Collectors;
 
 @Service
 public class AddressBookServiceImpl implements AddressBookService {
+    private static final Gson GSON = new Gson();
     private static final class AddressBookStore {
         private final List<Contact> contacts = new ArrayList<>();
         private final AtomicLong idGenerator = new AtomicLong(0);
@@ -289,6 +292,54 @@ public class AddressBookServiceImpl implements AddressBookService {
                 }
             }
             return added;
+        } catch (Exception ex) {
+            return 0;
+        }
+    }
+
+    @Override
+    public boolean exportAddressBookJson(String name, String filePath) {
+        AddressBookStore store = addressBooks.get(name);
+        if (store == null || filePath == null || filePath.isBlank()) {
+            return false;
+        }
+        Path path = Path.of(filePath);
+        try (Writer writer = Files.newBufferedWriter(path, StandardCharsets.UTF_8)) {
+            GSON.toJson(store.contacts, writer);
+            return true;
+        } catch (Exception ex) {
+            return false;
+        }
+    }
+
+    @Override
+    public int importAddressBookJson(String name, String filePath) {
+        AddressBookStore store = addressBooks.get(name);
+        if (store == null || filePath == null || filePath.isBlank()) {
+            return 0;
+        }
+        Path path = Path.of(filePath);
+        if (!Files.exists(path)) {
+            return 0;
+        }
+        try (Reader reader = Files.newBufferedReader(path, StandardCharsets.UTF_8)) {
+            ContactRequest[] requests = GSON.fromJson(reader, ContactRequest[].class);
+            if (requests == null || requests.length == 0) {
+                return 0;
+            }
+            int added = 0;
+            for (ContactRequest request : requests) {
+                if (request == null) {
+                    continue;
+                }
+                AddContactResult result = addContact(name, request);
+                if (result.getStatus() == AddContactStatus.CREATED) {
+                    added++;
+                }
+            }
+            return added;
+        } catch (JsonSyntaxException ex) {
+            return 0;
         } catch (Exception ex) {
             return 0;
         }
