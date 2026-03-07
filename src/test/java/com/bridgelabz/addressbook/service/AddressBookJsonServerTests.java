@@ -187,6 +187,57 @@ class AddressBookJsonServerTests {
         }
     }
 
+    @Test
+    void deleteEntryInJsonServer_andSyncMemory() {
+        String baseUrl = System.getProperty("json.server.url", "http://localhost:3000");
+        String endpoint = System.getProperty("json.server.endpoint", "/contacts");
+
+        ContactRequest original = newContact("Dennis" + uniqueSuffix(), "Ritchie", "Pune");
+        Integer createdId = null;
+
+        try {
+            createdId = RestAssured.given()
+                    .baseUri(baseUrl)
+                    .contentType("application/json")
+                    .body(original)
+                    .when()
+                    .post(endpoint)
+                    .then()
+                    .statusCode(201)
+                    .extract()
+                    .path("id");
+
+            Assumptions.assumeTrue(createdId != null, "JSON server did not return an id");
+
+            RestAssured.given()
+                    .baseUri(baseUrl)
+                    .when()
+                    .delete(endpoint + "/" + createdId)
+                    .then()
+                    .statusCode(200);
+
+            ContactRequest[] contacts = RestAssured.given()
+                    .baseUri(baseUrl)
+                    .when()
+                    .get(endpoint)
+                    .then()
+                    .statusCode(200)
+                    .extract()
+                    .as(ContactRequest[].class);
+
+            List<ContactRequest> contactList = contacts == null ? List.of() : Arrays.asList(contacts);
+            int loaded = addressBookService.loadAddressBook("JsonServer", contactList);
+
+            assertThat(addressBookService.getContacts("JsonServer"))
+                    .isPresent()
+                    .get()
+                    .noneMatch(contact -> contact.getFirstName().equals(original.getFirstName()));
+            assertThat(loaded).isEqualTo(contactList.size());
+        } catch (Exception ex) {
+            Assumptions.assumeTrue(false, "JSON server not reachable: " + baseUrl + endpoint);
+        }
+    }
+
     private static ContactRequest newContact(String firstName, String lastName, String city) {
         ContactRequest request = new ContactRequest();
         request.setFirstName(firstName);
