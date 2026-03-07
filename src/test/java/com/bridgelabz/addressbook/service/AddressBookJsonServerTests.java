@@ -117,6 +117,76 @@ class AddressBookJsonServerTests {
         }
     }
 
+    @Test
+    void updateEntryInJsonServer_andSyncMemory() {
+        String baseUrl = System.getProperty("json.server.url", "http://localhost:3000");
+        String endpoint = System.getProperty("json.server.endpoint", "/contacts");
+
+        ContactRequest original = newContact("Margaret" + uniqueSuffix(), "Hamilton", "Pune");
+        Integer createdId = null;
+
+        try {
+            createdId = RestAssured.given()
+                    .baseUri(baseUrl)
+                    .contentType("application/json")
+                    .body(original)
+                    .when()
+                    .post(endpoint)
+                    .then()
+                    .statusCode(201)
+                    .extract()
+                    .path("id");
+
+            Assumptions.assumeTrue(createdId != null, "JSON server did not return an id");
+
+            ContactRequest updated = newContact(original.getFirstName(), original.getLastName(), "Mumbai");
+            updated.setEmail("updated." + original.getFirstName().toLowerCase() + "@example.com");
+
+            RestAssured.given()
+                    .baseUri(baseUrl)
+                    .contentType("application/json")
+                    .body(updated)
+                    .when()
+                    .put(endpoint + "/" + createdId)
+                    .then()
+                    .statusCode(200);
+
+            ContactRequest[] contacts = RestAssured.given()
+                    .baseUri(baseUrl)
+                    .when()
+                    .get(endpoint)
+                    .then()
+                    .statusCode(200)
+                    .extract()
+                    .as(ContactRequest[].class);
+
+            Assumptions.assumeTrue(contacts != null && contacts.length > 0,
+                    "No contacts returned from JSON server");
+
+            List<ContactRequest> contactList = Arrays.asList(contacts);
+            int loaded = addressBookService.loadAddressBook("JsonServer", contactList);
+
+            assertThat(loaded).isEqualTo(contactList.size());
+            assertThat(addressBookService.getContacts("JsonServer"))
+                    .isPresent()
+                    .get()
+                    .anyMatch(contact -> contact.getFirstName().equals(updated.getFirstName())
+                            && contact.getCity().equals("Mumbai")
+                            && contact.getEmail().equals(updated.getEmail()));
+        } catch (Exception ex) {
+            Assumptions.assumeTrue(false, "JSON server not reachable: " + baseUrl + endpoint);
+        } finally {
+            if (createdId != null) {
+                RestAssured.given()
+                        .baseUri(baseUrl)
+                        .when()
+                        .delete(endpoint + "/" + createdId)
+                        .then()
+                        .statusCode(200);
+            }
+        }
+    }
+
     private static ContactRequest newContact(String firstName, String lastName, String city) {
         ContactRequest request = new ContactRequest();
         request.setFirstName(firstName);
