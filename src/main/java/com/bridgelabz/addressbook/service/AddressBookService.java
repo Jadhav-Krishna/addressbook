@@ -19,4 +19,8 @@ public interface AddressBookService {
     Optional<Contact> updateContact(String name, long id, ContactRequest request);
 
     boolean deleteContact(String name, long id);
+
+    List<Contact> searchByCity(String city);
+
+    List<Contact> searchByState(String state);
 }

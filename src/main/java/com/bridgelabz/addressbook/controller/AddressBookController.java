@@ -86,4 +86,14 @@ public class AddressBookController {
         }
         return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
     }
+
+    @GetMapping("/search/city/{city}")
+    public List<Contact> searchByCity(@PathVariable String city) {
+        return addressBookService.searchByCity(city);
+    }
+
+    @GetMapping("/search/state/{state}")
+    public List<Contact> searchByState(@PathVariable String state) {
+        return addressBookService.searchByState(state);
+    }
 }

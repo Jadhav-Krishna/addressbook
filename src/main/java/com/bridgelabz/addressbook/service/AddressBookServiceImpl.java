@@ -128,4 +128,20 @@ public class AddressBookServiceImpl implements AddressBookService {
         }
         return false;
     }
+
+    @Override
+    public List<Contact> searchByCity(String city) {
+        return addressBooks.values().stream()
+                .flatMap(store -> store.contacts.stream())
+                .filter(contact -> contact.getCity() != null && contact.getCity().equals(city))
+                .toList();
+    }
+
+    @Override
+    public List<Contact> searchByState(String state) {
+        return addressBooks.values().stream()
+                .flatMap(store -> store.contacts.stream())
+                .filter(contact -> contact.getState() != null && contact.getState().equals(state))
+                .toList();
+    }
 }
