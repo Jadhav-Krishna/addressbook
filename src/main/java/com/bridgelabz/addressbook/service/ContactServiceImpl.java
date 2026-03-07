@@ -69,6 +69,29 @@ public class ContactServiceImpl implements ContactService {
     }
 
     @Override
+    public Optional<Contact> updateContactByFirstName(String firstName, ContactRequest request) {
+        for (int index = 0; index < contacts.size(); index++) {
+            Contact existing = contacts.get(index);
+            if (existing.getFirstName() != null && existing.getFirstName().equals(firstName)) {
+                Contact updated = new Contact(
+                        existing.getId(),
+                        request.getFirstName(),
+                        request.getLastName(),
+                        request.getAddress(),
+                        request.getCity(),
+                        request.getState(),
+                        request.getZip(),
+                        request.getPhoneNumber(),
+                        request.getEmail()
+                );
+                contacts.set(index, updated);
+                return Optional.of(updated);
+            }
+        }
+        return Optional.empty();
+    }
+
+    @Override
     public boolean deleteContact(long id) {
         Iterator<Contact> iterator = contacts.iterator();
         while (iterator.hasNext()) {

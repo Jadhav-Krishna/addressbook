@@ -50,6 +50,15 @@ public class ContactController {
                 .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).build());
     }
 
+    @PutMapping("/name/{name}")
+    public ResponseEntity<Contact> updateContactByFirstName(
+            @PathVariable String name,
+            @RequestBody ContactRequest request) {
+        return contactService.updateContactByFirstName(name, request)
+                .map(ResponseEntity::ok)
+                .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).build());
+    }
+
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteContact(@PathVariable long id) {
         boolean deleted = contactService.deleteContact(id);

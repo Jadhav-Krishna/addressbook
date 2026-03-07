@@ -15,5 +15,7 @@ public interface ContactService {
 
     Optional<Contact> updateContact(long id, ContactRequest request);
 
+    Optional<Contact> updateContactByFirstName(String firstName, ContactRequest request);
+
     boolean deleteContact(long id);
 }
