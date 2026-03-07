@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -49,6 +50,20 @@ public class AddressBookServiceImpl implements AddressBookService {
             return Optional.empty();
         }
         return Optional.of(new ArrayList<>(store.contacts));
+    }
+
+    @Override
+    public Optional<List<Contact>> getContactsSortedByName(String name) {
+        AddressBookStore store = addressBooks.get(name);
+        if (store == null) {
+            return Optional.empty();
+        }
+        List<Contact> sorted = new ArrayList<>(store.contacts);
+        Comparator<Contact> nameComparator = Comparator
+                .comparing(Contact::getFirstName, Comparator.nullsLast(String.CASE_INSENSITIVE_ORDER))
+                .thenComparing(Contact::getLastName, Comparator.nullsLast(String.CASE_INSENSITIVE_ORDER));
+        Collections.sort(sorted, nameComparator);
+        return Optional.of(sorted);
     }
 
     @Override

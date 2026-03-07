@@ -14,6 +14,8 @@ public interface AddressBookService {
 
     Optional<List<Contact>> getContacts(String name);
 
+    Optional<List<Contact>> getContactsSortedByName(String name);
+
     AddContactResult addContact(String name, ContactRequest request);
 
     Optional<Contact> updateContact(String name, long id, ContactRequest request);

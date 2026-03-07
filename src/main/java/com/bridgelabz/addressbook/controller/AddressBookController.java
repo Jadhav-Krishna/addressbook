@@ -51,6 +51,13 @@ public class AddressBookController {
                 .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).build());
     }
 
+    @GetMapping("/{name}/contacts/sorted-by-name")
+    public ResponseEntity<List<Contact>> getContactsSortedByName(@PathVariable String name) {
+        return addressBookService.getContactsSortedByName(name)
+                .map(ResponseEntity::ok)
+                .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).build());
+    }
+
     @PostMapping("/{name}/contacts")
     public ResponseEntity<?> addContact(
             @PathVariable String name,
