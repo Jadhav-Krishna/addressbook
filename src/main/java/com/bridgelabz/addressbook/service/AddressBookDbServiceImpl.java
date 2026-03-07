@@ -5,6 +5,7 @@ import com.bridgelabz.addressbook.model.AddressBookEntry;
 import com.bridgelabz.addressbook.model.Contact;
 import com.bridgelabz.addressbook.repository.AddressBookJdbcRepository;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -67,5 +68,36 @@ public class AddressBookDbServiceImpl implements AddressBookDbService {
     @Override
     public java.util.Map<String, Long> countContactsByState() {
         return repository.countByState();
+    }
+
+    @Override
+    @Transactional
+    public Optional<Contact> addContactToDb(String addressBookName, ContactRequest request) {
+        if (addressBookName == null || addressBookName.isBlank()) {
+            return Optional.empty();
+        }
+        Contact contact = new Contact();
+        contact.setFirstName(request.getFirstName());
+        contact.setLastName(request.getLastName());
+        contact.setAddress(request.getAddress());
+        contact.setCity(request.getCity());
+        contact.setState(request.getState());
+        contact.setZip(request.getZip());
+        contact.setPhoneNumber(request.getPhoneNumber());
+        contact.setEmail(request.getEmail());
+
+        long addressBookId = repository.findAddressBookIdByName(addressBookName)
+                .orElseGet(() -> repository.insertAddressBook(addressBookName));
+        if (addressBookId <= 0) {
+            return Optional.empty();
+        }
+        LocalDateTime now = LocalDateTime.now();
+        long contactId = repository.insertContact(addressBookId, contact, now);
+        if (contactId <= 0) {
+            return Optional.empty();
+        }
+        contact.setId(contactId);
+        contact.setDateAdded(now);
+        return Optional.of(contact);
     }
 }

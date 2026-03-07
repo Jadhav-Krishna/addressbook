@@ -20,4 +20,6 @@ public interface AddressBookDbService {
     java.util.Map<String, Long> countContactsByCity();
 
     java.util.Map<String, Long> countContactsByState();
+
+    Optional<Contact> addContactToDb(String addressBookName, ContactRequest request);
 }

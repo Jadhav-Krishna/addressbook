@@ -83,4 +83,23 @@ class AddressBookDbServiceTests {
 
         assertThat(counts).containsEntry("MH", 2L);
     }
+
+    @Test
+    void addContactToDb_createsContactAndReturnsId() {
+        ContactRequest request = new ContactRequest();
+        request.setFirstName("Alan");
+        request.setLastName("Turing");
+        request.setAddress("3 Main St");
+        request.setCity("Pune");
+        request.setState("MH");
+        request.setZip("411002");
+        request.setPhoneNumber("6666666666");
+        request.setEmail("alan@example.com");
+
+        Optional<Contact> created = dbService.addContactToDb("Personal", request);
+
+        assertThat(created).isPresent();
+        assertThat(created.get().getId()).isNotNull();
+        assertThat(created.get().getDateAdded()).isNotNull();
+    }
 }

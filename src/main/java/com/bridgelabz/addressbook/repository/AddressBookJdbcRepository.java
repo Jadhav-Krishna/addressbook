@@ -4,8 +4,12 @@ import com.bridgelabz.addressbook.model.AddressBookEntry;
 import com.bridgelabz.addressbook.model.Contact;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
+import org.springframework.jdbc.support.GeneratedKeyHolder;
+import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Repository;
 
+import java.sql.PreparedStatement;
+import java.sql.Statement;
 import java.util.List;
 import java.util.Optional;
 
@@ -77,6 +81,29 @@ public class AddressBookJdbcRepository {
             SET address = ?, city = ?, state = ?, zip = ?, phone_number = ?, email = ?
             WHERE first_name = ? AND last_name = ?
             """;
+                private static final String SELECT_ADDRESS_BOOK_ID = """
+                    SELECT ab.id
+                    FROM address_book ab
+                    WHERE ab.name = ?
+                    """;
+                private static final String INSERT_ADDRESS_BOOK = """
+                    INSERT INTO address_book (name)
+                    VALUES (?)
+                    """;
+                private static final String INSERT_CONTACT = """
+                    INSERT INTO contact (
+                    address_book_id,
+                    first_name,
+                    last_name,
+                    address,
+                    city,
+                    state,
+                    zip,
+                    phone_number,
+                    email,
+                    date_added
+                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    """;
 
     private final JdbcTemplate jdbcTemplate;
 
@@ -146,6 +173,48 @@ public class AddressBookJdbcRepository {
             }
             return results;
         });
+    }
+
+    public Optional<Long> findAddressBookIdByName(String name) {
+        List<Long> ids = jdbcTemplate.query(
+                SELECT_ADDRESS_BOOK_ID,
+                ps -> ps.setString(1, name),
+                (rs, rowNum) -> rs.getLong("id"));
+        if (ids.isEmpty()) {
+            return Optional.empty();
+        }
+        return Optional.of(ids.get(0));
+    }
+
+    public long insertAddressBook(String name) {
+        KeyHolder keyHolder = new GeneratedKeyHolder();
+        jdbcTemplate.update(connection -> {
+            PreparedStatement ps = connection.prepareStatement(INSERT_ADDRESS_BOOK, Statement.RETURN_GENERATED_KEYS);
+            ps.setString(1, name);
+            return ps;
+        }, keyHolder);
+        Number key = keyHolder.getKey();
+        return key == null ? 0L : key.longValue();
+    }
+
+    public long insertContact(long addressBookId, Contact contact, java.time.LocalDateTime dateAdded) {
+        KeyHolder keyHolder = new GeneratedKeyHolder();
+        jdbcTemplate.update(connection -> {
+            PreparedStatement ps = connection.prepareStatement(INSERT_CONTACT, Statement.RETURN_GENERATED_KEYS);
+            ps.setLong(1, addressBookId);
+            ps.setString(2, contact.getFirstName());
+            ps.setString(3, contact.getLastName());
+            ps.setString(4, contact.getAddress());
+            ps.setString(5, contact.getCity());
+            ps.setString(6, contact.getState());
+            ps.setString(7, contact.getZip());
+            ps.setString(8, contact.getPhoneNumber());
+            ps.setString(9, contact.getEmail());
+            ps.setTimestamp(10, java.sql.Timestamp.valueOf(dateAdded));
+            return ps;
+        }, keyHolder);
+        Number key = keyHolder.getKey();
+        return key == null ? 0L : key.longValue();
     }
 
     private RowMapper<AddressBookEntry> rowMapper() {

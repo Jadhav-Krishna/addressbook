@@ -186,6 +186,15 @@ public class AddressBookController {
         return addressBookDbService.countContactsByState();
     }
 
+    @PostMapping("/db/contacts")
+    public ResponseEntity<Contact> addContactToDb(
+            @RequestParam String addressBookName,
+            @RequestBody ContactRequest request) {
+        return addressBookDbService.addContactToDb(addressBookName, request)
+                .map(contact -> ResponseEntity.status(HttpStatus.CREATED).body(contact))
+                .orElseGet(() -> ResponseEntity.status(HttpStatus.BAD_REQUEST).build());
+    }
+
     @PostMapping("/{name}/export")
     public ResponseEntity<ApiResponse> exportAddressBook(
             @PathVariable String name,
