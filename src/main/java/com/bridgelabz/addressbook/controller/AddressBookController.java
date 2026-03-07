@@ -4,8 +4,10 @@ import com.bridgelabz.addressbook.dto.AddContactResult;
 import com.bridgelabz.addressbook.dto.AddContactStatus;
 import com.bridgelabz.addressbook.dto.ApiResponse;
 import com.bridgelabz.addressbook.dto.ContactRequest;
+import com.bridgelabz.addressbook.model.AddressBookEntry;
 import com.bridgelabz.addressbook.model.Contact;
 import com.bridgelabz.addressbook.service.AddressBookService;
+import com.bridgelabz.addressbook.service.AddressBookDbService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -26,9 +28,12 @@ import java.util.Map;
 @RequestMapping("/api/address-books")
 public class AddressBookController {
     private final AddressBookService addressBookService;
+    private final AddressBookDbService addressBookDbService;
 
-    public AddressBookController(AddressBookService addressBookService) {
+    public AddressBookController(AddressBookService addressBookService,
+                                 AddressBookDbService addressBookDbService) {
         this.addressBookService = addressBookService;
+        this.addressBookDbService = addressBookDbService;
     }
 
     @PostMapping("/{name}")
@@ -135,6 +140,11 @@ public class AddressBookController {
     @GetMapping("/search/count/state")
     public Map<String, Long> countByState() {
         return addressBookService.countByState();
+    }
+
+    @GetMapping("/db/entries")
+    public List<AddressBookEntry> getAllEntriesFromDb() {
+        return addressBookDbService.getAllEntries();
     }
 
     @PostMapping("/{name}/export")
