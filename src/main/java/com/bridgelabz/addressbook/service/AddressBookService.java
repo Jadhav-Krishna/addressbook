@@ -35,4 +35,8 @@ public interface AddressBookService {
     java.util.Map<String, Long> countByCity();
 
     java.util.Map<String, Long> countByState();
+
+    boolean exportAddressBook(String name, String filePath);
+
+    int importAddressBook(String name, String filePath);
 }

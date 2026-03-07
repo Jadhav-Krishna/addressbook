@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import java.time.Instant;
 import java.util.List;
@@ -134,5 +135,29 @@ public class AddressBookController {
     @GetMapping("/search/count/state")
     public Map<String, Long> countByState() {
         return addressBookService.countByState();
+    }
+
+    @PostMapping("/{name}/export")
+    public ResponseEntity<ApiResponse> exportAddressBook(
+            @PathVariable String name,
+            @RequestParam String path) {
+        boolean exported = addressBookService.exportAddressBook(name, path);
+        if (exported) {
+            return ResponseEntity.ok(new ApiResponse("Address book exported", Instant.now().toString()));
+        }
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(new ApiResponse("Export failed", Instant.now().toString()));
+    }
+
+    @PostMapping("/{name}/import")
+    public ResponseEntity<ApiResponse> importAddressBook(
+            @PathVariable String name,
+            @RequestParam String path) {
+        int addedCount = addressBookService.importAddressBook(name, path);
+        if (addedCount > 0) {
+            return ResponseEntity.ok(new ApiResponse("Imported contacts: " + addedCount, Instant.now().toString()));
+        }
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(new ApiResponse("Import failed or no new contacts", Instant.now().toString()));
     }
 }

@@ -16,6 +16,10 @@ import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardOpenOption;
+import java.util.stream.Stream;
 
 @Service
 public class AddressBookServiceImpl implements AddressBookService {
@@ -223,6 +227,84 @@ public class AddressBookServiceImpl implements AddressBookService {
                 .flatMap(store -> store.contacts.stream())
                 .filter(contact -> contact.getState() != null && !contact.getState().isBlank())
                 .collect(Collectors.groupingBy(Contact::getState, Collectors.counting()));
+    }
+
+    @Override
+    public boolean exportAddressBook(String name, String filePath) {
+        AddressBookStore store = addressBooks.get(name);
+        if (store == null || filePath == null || filePath.isBlank()) {
+            return false;
+        }
+        List<String> lines = new ArrayList<>();
+        lines.add("firstName,lastName,address,city,state,zip,phoneNumber,email");
+        store.contacts.stream()
+                .map(this::toCsvLine)
+                .forEach(lines::add);
+        try {
+            Files.write(Path.of(filePath), lines, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
+            return true;
+        } catch (Exception ex) {
+            return false;
+        }
+    }
+
+    @Override
+    public int importAddressBook(String name, String filePath) {
+        AddressBookStore store = addressBooks.get(name);
+        if (store == null || filePath == null || filePath.isBlank()) {
+            return 0;
+        }
+        Path path = Path.of(filePath);
+        if (!Files.exists(path)) {
+            return 0;
+        }
+        try (Stream<String> lines = Files.lines(path)) {
+            return (int) lines
+                    .skip(1)
+                    .map(this::parseCsvLine)
+                    .filter(parsed -> parsed != null)
+                    .map(parsed -> addContact(name, parsed))
+                    .filter(result -> result.getStatus() == AddContactStatus.CREATED)
+                    .count();
+        } catch (Exception ex) {
+            return 0;
+        }
+    }
+
+    private String toCsvLine(Contact contact) {
+        return String.join(",",
+                nullToEmpty(contact.getFirstName()),
+                nullToEmpty(contact.getLastName()),
+                nullToEmpty(contact.getAddress()),
+                nullToEmpty(contact.getCity()),
+                nullToEmpty(contact.getState()),
+                nullToEmpty(contact.getZip()),
+                nullToEmpty(contact.getPhoneNumber()),
+                nullToEmpty(contact.getEmail()));
+    }
+
+    private ContactRequest parseCsvLine(String line) {
+        if (line == null || line.isBlank()) {
+            return null;
+        }
+        String[] parts = line.split(",", -1);
+        if (parts.length < 8) {
+            return null;
+        }
+        ContactRequest request = new ContactRequest();
+        request.setFirstName(parts[0]);
+        request.setLastName(parts[1]);
+        request.setAddress(parts[2]);
+        request.setCity(parts[3]);
+        request.setState(parts[4]);
+        request.setZip(parts[5]);
+        request.setPhoneNumber(parts[6]);
+        request.setEmail(parts[7]);
+        return request;
+    }
+
+    private String nullToEmpty(String value) {
+        return value == null ? "" : value;
     }
 
     private void addToIndex(Map<String, List<Contact>> index, String key, Contact contact) {
