@@ -20,6 +20,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.RequestParam;
 
+import java.time.LocalDateTime;
 import java.time.Instant;
 import java.util.List;
 import java.util.Map;
@@ -164,6 +165,15 @@ public class AddressBookController {
         return addressBookDbService.updateContactByName(firstName, lastName, request)
                 .map(ResponseEntity::ok)
                 .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).build());
+    }
+
+    @GetMapping("/db/contacts/period")
+    public List<Contact> getContactsAddedInPeriod(
+            @RequestParam String start,
+            @RequestParam String end) {
+        LocalDateTime startDateTime = LocalDateTime.parse(start);
+        LocalDateTime endDateTime = LocalDateTime.parse(end);
+        return addressBookDbService.getContactsAddedBetween(startDateTime, endDateTime);
     }
 
     @PostMapping("/{name}/export")

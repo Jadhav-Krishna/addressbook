@@ -6,6 +6,7 @@ import com.bridgelabz.addressbook.model.Contact;
 import com.bridgelabz.addressbook.repository.AddressBookJdbcRepository;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
  
@@ -51,5 +52,10 @@ public class AddressBookDbServiceImpl implements AddressBookDbService {
         Optional<Contact> refreshed = repository.findContactByName(firstName, lastName);
         refreshed.ifPresent(addressBookService::syncContactByName);
         return refreshed;
+    }
+
+    @Override
+    public List<Contact> getContactsAddedBetween(LocalDateTime start, LocalDateTime end) {
+        return repository.findContactsAddedBetween(start, end);
     }
 }

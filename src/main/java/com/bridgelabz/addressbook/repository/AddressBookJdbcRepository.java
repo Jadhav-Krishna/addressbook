@@ -23,7 +23,8 @@ public class AddressBookJdbcRepository {
                 c.state,
                 c.zip,
                 c.phone_number,
-                c.email
+                c.email,
+                c.date_added
             FROM address_book ab
             LEFT JOIN contact c ON c.address_book_id = ab.id
             ORDER BY ab.name, c.first_name, c.last_name
@@ -38,11 +39,28 @@ public class AddressBookJdbcRepository {
                 c.state,
                 c.zip,
                 c.phone_number,
-                c.email
+                c.email,
+                c.date_added
             FROM contact c
             WHERE c.first_name = ? AND c.last_name = ?
             """;
-    private static final String UPDATE_CONTACT_BY_NAME = """
+    private static final String SELECT_CONTACTS_BY_PERIOD = """
+            SELECT
+                c.id,
+                c.first_name,
+                c.last_name,
+                c.address,
+                c.city,
+                c.state,
+                c.zip,
+                c.phone_number,
+                c.email,
+                c.date_added
+            FROM contact c
+            WHERE c.date_added >= ? AND c.date_added <= ?
+            ORDER BY c.date_added
+            """;
+        private static final String UPDATE_CONTACT_BY_NAME = """
             UPDATE contact
             SET address = ?, city = ?, state = ?, zip = ?, phone_number = ?, email = ?
             WHERE first_name = ? AND last_name = ?
@@ -88,6 +106,16 @@ public class AddressBookJdbcRepository {
         return updatedRows > 0;
     }
 
+    public List<Contact> findContactsAddedBetween(java.time.LocalDateTime start, java.time.LocalDateTime end) {
+        return jdbcTemplate.query(
+                SELECT_CONTACTS_BY_PERIOD,
+                ps -> {
+                    ps.setTimestamp(1, java.sql.Timestamp.valueOf(start));
+                    ps.setTimestamp(2, java.sql.Timestamp.valueOf(end));
+                },
+                contactRowMapper());
+    }
+
     private RowMapper<AddressBookEntry> rowMapper() {
         return (rs, rowNum) -> {
             AddressBookEntry entry = new AddressBookEntry();
@@ -107,6 +135,10 @@ public class AddressBookJdbcRepository {
             entry.setZip(rs.getString("zip"));
             entry.setPhoneNumber(rs.getString("phone_number"));
             entry.setEmail(rs.getString("email"));
+            java.sql.Timestamp addedTs = rs.getTimestamp("date_added");
+            if (addedTs != null) {
+                entry.setDateAdded(addedTs.toLocalDateTime());
+            }
             return entry;
         };
     }
@@ -123,6 +155,10 @@ public class AddressBookJdbcRepository {
             contact.setZip(rs.getString("zip"));
             contact.setPhoneNumber(rs.getString("phone_number"));
             contact.setEmail(rs.getString("email"));
+            java.sql.Timestamp addedTs = rs.getTimestamp("date_added");
+            if (addedTs != null) {
+                contact.setDateAdded(addedTs.toLocalDateTime());
+            }
             return contact;
         };
     }

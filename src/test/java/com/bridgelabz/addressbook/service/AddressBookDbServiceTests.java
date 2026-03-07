@@ -8,6 +8,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.autoconfigure.jdbc.JdbcTest;
 import org.springframework.context.annotation.Import;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -54,5 +55,16 @@ class AddressBookDbServiceTests {
         assertThat(updated).isPresent();
         assertThat(updated.get().getCity()).isEqualTo("Delhi");
         assertThat(updated.get().getEmail()).isEqualTo("ada.new@example.com");
+    }
+
+    @Test
+    void getContactsAddedBetween_returnsMatchingRows() {
+        LocalDateTime start = LocalDateTime.parse("2026-03-01T00:00:00");
+        LocalDateTime end = LocalDateTime.parse("2026-03-03T23:59:59");
+
+        List<Contact> contacts = dbService.getContactsAddedBetween(start, end);
+
+        assertThat(contacts).isNotEmpty();
+        assertThat(contacts).allMatch(contact -> "Ada".equals(contact.getFirstName()));
     }
 }

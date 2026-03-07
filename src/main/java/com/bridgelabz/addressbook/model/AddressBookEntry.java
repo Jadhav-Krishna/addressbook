@@ -12,13 +12,14 @@ public class AddressBookEntry {
     private String zip;
     private String phoneNumber;
     private String email;
+    private java.time.LocalDateTime dateAdded;
 
     public AddressBookEntry() {
     }
 
     public AddressBookEntry(long addressBookId, String addressBookName, Long contactId, String firstName,
                             String lastName, String address, String city, String state, String zip,
-                            String phoneNumber, String email) {
+                            String phoneNumber, String email, java.time.LocalDateTime dateAdded) {
         this.addressBookId = addressBookId;
         this.addressBookName = addressBookName;
         this.contactId = contactId;
@@ -30,6 +31,7 @@ public class AddressBookEntry {
         this.zip = zip;
         this.phoneNumber = phoneNumber;
         this.email = email;
+        this.dateAdded = dateAdded;
     }
 
     public long getAddressBookId() {
@@ -118,5 +120,13 @@ public class AddressBookEntry {
 
     public void setEmail(String email) {
         this.email = email;
+    }
+
+    public java.time.LocalDateTime getDateAdded() {
+        return dateAdded;
+    }
+
+    public void setDateAdded(java.time.LocalDateTime dateAdded) {
+        this.dateAdded = dateAdded;
     }
 }

@@ -10,6 +10,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.time.LocalDateTime;
 import java.util.Objects;
 
 @Getter
@@ -29,6 +30,7 @@ public class Contact {
     private String zip;
     private String phoneNumber;
     private String email;
+    private LocalDateTime dateAdded;
 
     @Override
     public boolean equals(Object other) {
@@ -60,6 +62,7 @@ public class Contact {
                 ", zip='" + zip + '\'' +
                 ", phoneNumber='" + phoneNumber + '\'' +
                 ", email='" + email + '\'' +
+                ", dateAdded='" + dateAdded + '\'' +
                 '}';
     }
 }

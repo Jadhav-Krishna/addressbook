@@ -14,6 +14,7 @@ CREATE TABLE contact (
     zip VARCHAR(20),
     phone_number VARCHAR(30),
     email VARCHAR(200),
+    date_added TIMESTAMP NOT NULL,
     CONSTRAINT fk_contact_address_book FOREIGN KEY (address_book_id)
         REFERENCES address_book(id)
 );

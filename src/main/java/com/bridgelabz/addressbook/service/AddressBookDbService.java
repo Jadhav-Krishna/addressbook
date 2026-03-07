@@ -4,6 +4,7 @@ import com.bridgelabz.addressbook.dto.ContactRequest;
 import com.bridgelabz.addressbook.model.AddressBookEntry;
 import com.bridgelabz.addressbook.model.Contact;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -13,4 +14,6 @@ public interface AddressBookDbService {
     Optional<Contact> getContactByName(String firstName, String lastName);
 
     Optional<Contact> updateContactByName(String firstName, String lastName, ContactRequest request);
+
+    List<Contact> getContactsAddedBetween(LocalDateTime start, LocalDateTime end);
 }
