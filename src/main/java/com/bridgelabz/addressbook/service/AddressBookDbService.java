@@ -22,4 +22,6 @@ public interface AddressBookDbService {
     java.util.Map<String, Long> countContactsByState();
 
     Optional<Contact> addContactToDb(String addressBookName, ContactRequest request);
+
+    List<Contact> addContactsToDb(String addressBookName, List<ContactRequest> requests);
 }

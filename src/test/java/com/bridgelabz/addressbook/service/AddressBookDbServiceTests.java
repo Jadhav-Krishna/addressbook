@@ -9,6 +9,7 @@ import org.springframework.boot.test.autoconfigure.jdbc.JdbcTest;
 import org.springframework.context.annotation.Import;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.Map;
@@ -101,5 +102,38 @@ class AddressBookDbServiceTests {
         assertThat(created).isPresent();
         assertThat(created.get().getId()).isNotNull();
         assertThat(created.get().getDateAdded()).isNotNull();
+    }
+
+    @Test
+    void addContactsToDb_insertsMultipleContacts() {
+        List<ContactRequest> requests = new ArrayList<>();
+
+        ContactRequest first = new ContactRequest();
+        first.setFirstName("Katherine");
+        first.setLastName("Johnson");
+        first.setAddress("4 Main St");
+        first.setCity("Pune");
+        first.setState("MH");
+        first.setZip("411003");
+        first.setPhoneNumber("5555555555");
+        first.setEmail("kj@example.com");
+
+        ContactRequest second = new ContactRequest();
+        second.setFirstName("Tim");
+        second.setLastName("Berners-Lee");
+        second.setAddress("5 Main St");
+        second.setCity("Pune");
+        second.setState("MH");
+        second.setZip("411004");
+        second.setPhoneNumber("4444444444");
+        second.setEmail("tbl@example.com");
+
+        requests.add(first);
+        requests.add(second);
+
+        List<Contact> created = dbService.addContactsToDb("Personal", requests);
+
+        assertThat(created).hasSize(2);
+        assertThat(created).allMatch(contact -> contact.getId() != null);
     }
 }

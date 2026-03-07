@@ -195,6 +195,17 @@ public class AddressBookController {
                 .orElseGet(() -> ResponseEntity.status(HttpStatus.BAD_REQUEST).build());
     }
 
+    @PostMapping("/db/contacts/bulk")
+    public ResponseEntity<List<Contact>> addContactsToDb(
+            @RequestParam String addressBookName,
+            @RequestBody List<ContactRequest> requests) {
+        List<Contact> created = addressBookDbService.addContactsToDb(addressBookName, requests);
+        if (created.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+        }
+        return ResponseEntity.status(HttpStatus.CREATED).body(created);
+    }
+
     @PostMapping("/{name}/export")
     public ResponseEntity<ApiResponse> exportAddressBook(
             @PathVariable String name,
