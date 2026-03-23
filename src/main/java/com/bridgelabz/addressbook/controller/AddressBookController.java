@@ -4,6 +4,7 @@ import com.bridgelabz.addressbook.dto.AddContactResult;
 import com.bridgelabz.addressbook.dto.AddContactStatus;
 import com.bridgelabz.addressbook.dto.ApiResponse;
 import com.bridgelabz.addressbook.dto.ContactRequest;
+import com.bridgelabz.addressbook.dto.CreateAddressBookRequest;
 import com.bridgelabz.addressbook.model.AddressBookEntry;
 import com.bridgelabz.addressbook.model.Contact;
 import com.bridgelabz.addressbook.service.AddressBookService;
@@ -19,6 +20,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.CrossOrigin;
 
 import java.time.LocalDateTime;
 import java.time.Instant;
@@ -27,6 +29,7 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api/address-books")
+@CrossOrigin(origins = "http://localhost:5173")
 public class AddressBookController {
     private final AddressBookService addressBookService;
     private final AddressBookDbService addressBookDbService;
@@ -40,6 +43,18 @@ public class AddressBookController {
     @PostMapping("/{name}")
     public ResponseEntity<Void> createAddressBook(@PathVariable String name) {
         boolean created = addressBookService.createAddressBook(name);
+        if (created) {
+            return ResponseEntity.status(HttpStatus.CREATED).build();
+        }
+        return ResponseEntity.status(HttpStatus.CONFLICT).build();
+    }
+
+    @PostMapping("/name")
+    public ResponseEntity<Void> createAddressBookFromBody(@RequestBody CreateAddressBookRequest request) {
+        if (request == null || request.getName() == null || request.getName().isBlank()) {
+            return ResponseEntity.badRequest().build();
+        }
+        boolean created = addressBookService.createAddressBook(request.getName());
         if (created) {
             return ResponseEntity.status(HttpStatus.CREATED).build();
         }
